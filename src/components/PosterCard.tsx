@@ -3,13 +3,24 @@ import type { Film, Identity } from '../types';
 import { IDENTITY_BADGE, IDENTITY_LABEL } from '../types';
 import type { Tally } from '../lib/votes';
 
-export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete, identity, onSetReview }:
+export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete, identity,
+  onSetReview, onSetComment }:
   { film: Film; tally: Tally; onVote: (id: string) => void;
     onToggleWatched: (id: string) => void; onDelete: (id: string) => void;
-    identity: Identity; onSetReview: (id: string, author: Identity, text: string | null) => void }) {
+    identity: Identity; onSetReview: (id: string, author: Identity, text: string | null) => void;
+    onSetComment: (id: string, text: string | null) => void }) {
   const ownerClass = film.added_by === 'pig' ? 'badge-you' : 'badge-ta';
   const [showComment, setShowComment] = useState(false);
+  const [editComment, setEditComment] = useState(false);
+  const [commentDraft, setCommentDraft] = useState(film.comment ?? '');
   const watched = film.status === 'watched';
+
+  const startEditComment = () => { setCommentDraft(film.comment ?? ''); setEditComment(true); };
+  const saveComment = () => {
+    onSetComment(film.id, commentDraft.trim() || null);
+    setEditComment(false);
+    setShowComment(false);
+  };
   return (
     <div className="film">
       <div className="poster" style={{
@@ -24,20 +35,44 @@ export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete, ide
           position: 'absolute', top: 7, right: 7, width: 24, height: 24, borderRadius: '50%',
           fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center',
           justifyContent: 'center' }}>{IDENTITY_BADGE[film.added_by]}</span>
-        {film.comment && (
-          <button aria-label="查看评论" onClick={() => setShowComment((s) => !s)} style={{
-            position: 'absolute', top: 7, left: 7, width: 24, height: 24, borderRadius: '50%',
-            border: 'none', background: 'rgba(18,4,7,.78)', color: 'var(--gold)',
-            fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
-        )}
-        {film.comment && showComment && (
+        <button aria-label="想看理由" onClick={() => setShowComment((s) => !s)} style={{
+          position: 'absolute', top: 7, left: 7, width: 24, height: 24, borderRadius: '50%',
+          border: 'none', background: 'rgba(18,4,7,.78)', color: 'var(--gold)',
+          opacity: film.comment ? 1 : 0.55,
+          fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
+        {showComment && (
           <div style={{ position: 'absolute', top: 36, left: 7, right: 7, zIndex: 2,
-            background: 'rgba(18,4,7,.95)', border: '1px solid rgba(233,196,106,.5)',
+            background: 'rgba(18,4,7,.96)', border: '1px solid rgba(233,196,106,.5)',
             borderRadius: 8, padding: '8px 10px', color: 'var(--ink)', fontSize: 12,
-            lineHeight: 1.5, boxShadow: '0 6px 18px rgba(0,0,0,.6)' }}>{film.comment}</div>
+            lineHeight: 1.5, boxShadow: '0 6px 18px rgba(0,0,0,.6)' }}>
+            {editComment ? (
+              <>
+                <textarea value={commentDraft} onChange={(e) => setCommentDraft(e.target.value)}
+                  rows={3} placeholder="为什么想看…"
+                  style={{ width: '100%', resize: 'vertical', fontFamily: 'inherit', fontSize: 12,
+                    padding: 6, borderRadius: 6, border: '1px solid var(--gold)',
+                    background: 'transparent', color: 'var(--ink)' }} />
+                <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                  <button onClick={saveComment} style={{ ...actionStyle, flex: 'none',
+                    color: '#2a0a12', background: 'var(--gold)', borderColor: 'var(--gold)' }}>保存</button>
+                  <button onClick={() => setEditComment(false)}
+                    style={{ ...actionStyle, flex: 'none' }}>取消</button>
+                </div>
+              </>
+            ) : film.comment ? (
+              <>
+                <div style={{ whiteSpace: 'pre-wrap' }}>{film.comment}</div>
+                <button onClick={startEditComment}
+                  style={{ ...actionStyle, flex: 'none', marginTop: 6 }}>编辑</button>
+              </>
+            ) : (
+              <button onClick={startEditComment}
+                style={{ ...actionStyle, flex: 'none' }}>✍️ 写想看理由</button>
+            )}
+          </div>
         )}
         {!film.poster_url && (
-          <span className="serif" style={{ color: '#fff', fontSize: 14, fontWeight: 700,
+          <span style={{ color: '#fff', fontSize: 16, fontWeight: 700,
             textShadow: '0 1px 5px #000' }}>{film.title}</span>
         )}
       </div>
@@ -51,7 +86,7 @@ export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete, ide
           ♥ 投 {tally.count > 0 ? tally.count : ''}
         </button>
       </div>
-      <div className="serif" style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginTop: 4 }}>
+      <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginTop: 6, lineHeight: 1.3 }}>
         {film.poster_url ? film.title : ''}
       </div>
       <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>

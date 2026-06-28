@@ -52,6 +52,10 @@ export async function setReview(id: string, author: Identity, text: string | nul
   const { error } = await supabase.from('films').update({ [column]: text }).eq('id', id);
   if (error) throw error;
 }
+export async function setComment(id: string, text: string | null) {
+  const { error } = await supabase.from('films').update({ comment: text }).eq('id', id);
+  if (error) throw error;
+}
 
 // ---- votes ----
 export async function listVotes(): Promise<Vote[]> {

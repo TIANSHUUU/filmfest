@@ -3,11 +3,12 @@ import { PosterCard } from './PosterCard';
 import { tallyForFilm } from '../lib/votes';
 
 export function PosterWall({ films, categories, votes, onVote, onToggleWatched, onDelete,
-  onRenameCategory, identity, onSetReview }:
+  onRenameCategory, identity, onSetReview, onSetComment }:
   { films: Film[]; categories: Category[]; votes: Vote[]; onVote: (id: string) => void;
     onToggleWatched: (id: string) => void; onDelete: (id: string) => void;
     onRenameCategory: (id: string) => void; identity: Identity;
-    onSetReview: (id: string, author: Identity, text: string | null) => void }) {
+    onSetReview: (id: string, author: Identity, text: string | null) => void;
+    onSetComment: (id: string, text: string | null) => void }) {
   const sections = [
     ...categories.map((c) => ({ id: c.id as string | null, name: c.name, items: films.filter((f) => f.category_id === c.id) })),
     { id: null, name: '未分类', items: films.filter((f) => !f.category_id || !categories.some((c) => c.id === f.category_id)) },
@@ -32,7 +33,7 @@ export function PosterWall({ films, categories, votes, onVote, onToggleWatched, 
             {s.items.map((f) => (
               <PosterCard key={f.id} film={f} tally={tallyForFilm(votes, f.id)} onVote={onVote}
                 onToggleWatched={onToggleWatched} onDelete={onDelete}
-                identity={identity} onSetReview={onSetReview} />
+                identity={identity} onSetReview={onSetReview} onSetComment={onSetComment} />
             ))}
           </div>
         </section>

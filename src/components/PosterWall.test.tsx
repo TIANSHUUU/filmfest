@@ -15,7 +15,7 @@ const mk = (id: string, cat: string | null): Film => ({
 });
 const common = {
   onVote: vi.fn(), onToggleWatched: vi.fn(), onDelete: vi.fn(),
-  onRenameCategory: vi.fn(), onSetReview: vi.fn(), identity: 'pig' as const,
+  onRenameCategory: vi.fn(), onSetReview: vi.fn(), onSetComment: vi.fn(), identity: 'pig' as const,
 };
 
 describe('PosterWall', () => {

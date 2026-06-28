@@ -22,5 +22,6 @@ export function useFilms() {
     setStatus: db.setFilmStatus,
     remove: db.deleteFilm,
     setReview: db.setReview,
+    setComment: db.setComment,
   };
 }

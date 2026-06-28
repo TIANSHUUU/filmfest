@@ -12,7 +12,7 @@ export function Nav({ identity, onAddFilm, onManageCategories }: {
         Tapasta电影节</div>
       <button onClick={onManageCategories} style={{ background: 'transparent',
         border: '1px solid rgba(233,196,106,.4)', color: '#c9b58a', borderRadius: 20,
-        padding: '6px 12px', fontSize: 13 }}>管理分类</button>
+        padding: '6px 12px', fontSize: 13 }}>管理片单</button>
       <div style={{ flex: 1 }} />
       <button onClick={onAddFilm} style={{ background: 'linear-gradient(135deg,var(--gold-bright),#d4a843)',
         color: '#2a0a12', fontWeight: 800, fontSize: 13, padding: '9px 16px', borderRadius: 22,

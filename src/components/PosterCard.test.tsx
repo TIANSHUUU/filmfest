@@ -12,7 +12,7 @@ const base: Film = {
 const zero = { pig: false, baby: false, count: 0 };
 const common = {
   onVote: vi.fn(), onToggleWatched: vi.fn(), onDelete: vi.fn(),
-  onSetReview: vi.fn(), identity: 'pig' as const,
+  onSetReview: vi.fn(), onSetComment: vi.fn(), identity: 'pig' as const,
 };
 
 describe('PosterCard', () => {
@@ -27,21 +27,46 @@ describe('PosterCard', () => {
     expect(onVote).toHaveBeenCalledWith('f1');
   });
 
-  it('hides the comment icon when there is no comment', () => {
+  it('always shows the 想看理由 icon, even without a reason', () => {
     render(<PosterCard film={base} tally={zero} {...common} />);
-    expect(screen.queryByLabelText('查看评论')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('想看理由')).toBeInTheDocument();
   });
 
-  it('shows 💬 and toggles a comment popover when the film has a comment', async () => {
+  it('shows and toggles the 想看理由 popover when a reason exists', async () => {
     const film = { ...base, comment: '诺兰神作，必看' };
     render(<PosterCard film={film} tally={zero} {...common} />);
 
-    const btn = screen.getByLabelText('查看评论');
+    const btn = screen.getByLabelText('想看理由');
     expect(screen.queryByText('诺兰神作，必看')).not.toBeInTheDocument();
     await userEvent.click(btn);
     expect(screen.getByText('诺兰神作，必看')).toBeInTheDocument();
     await userEvent.click(btn);
     expect(screen.queryByText('诺兰神作，必看')).not.toBeInTheDocument();
+  });
+
+  it('edits an existing reason via the popover', async () => {
+    const onSetComment = vi.fn();
+    const film = { ...base, comment: '想看' };
+    render(<PosterCard film={film} tally={zero} {...common} onSetComment={onSetComment} />);
+
+    await userEvent.click(screen.getByLabelText('想看理由'));
+    await userEvent.click(screen.getByText('编辑'));
+    const ta = screen.getByPlaceholderText(/为什么想看/);
+    await userEvent.clear(ta);
+    await userEvent.type(ta, '冲影评去的');
+    await userEvent.click(screen.getByText('保存'));
+    expect(onSetComment).toHaveBeenCalledWith('f1', '冲影评去的');
+  });
+
+  it('adds a reason when none exists', async () => {
+    const onSetComment = vi.fn();
+    render(<PosterCard film={base} tally={zero} {...common} onSetComment={onSetComment} />);
+
+    await userEvent.click(screen.getByLabelText('想看理由'));
+    await userEvent.click(screen.getByText(/写想看理由/));
+    await userEvent.type(screen.getByPlaceholderText(/为什么想看/), '朋友推荐');
+    await userEvent.click(screen.getByText('保存'));
+    expect(onSetComment).toHaveBeenCalledWith('f1', '朋友推荐');
   });
 
   it('marks a watchlist film as watched and deletes via callbacks', async () => {

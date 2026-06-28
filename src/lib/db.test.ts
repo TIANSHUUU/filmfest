@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const fromMock = vi.fn();
 vi.mock('./supabase', () => ({ supabase: { from: (...a: any[]) => fromMock(...a) } }));
 
-import { addFilm, toggleVote, setReview } from './db';
+import { addFilm, toggleVote, setReview, setComment } from './db';
 
 beforeEach(() => fromMock.mockReset());
 
@@ -63,5 +63,18 @@ describe('setReview', () => {
 
     await setReview('f1', 'baby', null);
     expect(update).toHaveBeenCalledWith({ review_baby: null });
+  });
+});
+
+describe('setComment', () => {
+  it('updates the comment column', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const update = vi.fn(() => ({ eq }));
+    fromMock.mockReturnValue({ update });
+
+    await setComment('f1', '想看很久了');
+    expect(fromMock).toHaveBeenCalledWith('films');
+    expect(update).toHaveBeenCalledWith({ comment: '想看很久了' });
+    expect(eq).toHaveBeenCalledWith('id', 'f1');
   });
 });

@@ -57,6 +57,11 @@ function Main({ identity }: { identity: Identity }) {
     await films.refresh();
   };
 
+  const onSetComment = async (id: string, text: string | null) => {
+    await films.setComment(id, text);
+    await films.refresh();
+  };
+
   const tabStyle = (active: boolean): React.CSSProperties => ({
     fontSize: 22, fontWeight: 700, padding: 0, background: 'transparent', border: 'none',
     color: active ? '#fff' : '#7a6748', borderBottom: active ? '2px solid var(--gold)' : '2px solid transparent',
@@ -83,7 +88,8 @@ function Main({ identity }: { identity: Identity }) {
 
       <PosterWall films={shown} categories={cats.categories} votes={votes.votes}
         onVote={onVote} onToggleWatched={onToggleWatched} onDelete={onDelete}
-        onRenameCategory={onRenameCategory} identity={identity} onSetReview={onSetReview} />
+        onRenameCategory={onRenameCategory} identity={identity}
+        onSetReview={onSetReview} onSetComment={onSetComment} />
 
       <VotingWidget films={watchlist} votes={votes.votes} onVote={onVote} />
 

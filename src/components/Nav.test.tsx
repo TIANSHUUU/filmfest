@@ -9,7 +9,7 @@ describe('Nav', () => {
     render(<Nav identity="pig" onAddFilm={onAdd} onManageCategories={onManage} />);
     await userEvent.click(screen.getByText('＋ 搜片添加'));
     expect(onAdd).toHaveBeenCalled();
-    await userEvent.click(screen.getByText('管理分类'));
+    await userEvent.click(screen.getByText('管理片单'));
     expect(onManage).toHaveBeenCalled();
   });
 });
