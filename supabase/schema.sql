@@ -14,6 +14,8 @@ create table films (
   tmdb_id int,
   overview text,
   comment text,
+  review_pig text,
+  review_baby text,
   category_id uuid references categories(id) on delete set null,
   added_by text not null check (added_by in ('pig','baby')),
   status text not null default 'watchlist' check (status in ('watchlist','watched')),

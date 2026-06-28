@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import type { Film } from '../types';
-import { IDENTITY_BADGE } from '../types';
+import type { Film, Identity } from '../types';
+import { IDENTITY_BADGE, IDENTITY_LABEL } from '../types';
 import type { Tally } from '../lib/votes';
 
-export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete }:
+export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete, identity, onSetReview }:
   { film: Film; tally: Tally; onVote: (id: string) => void;
-    onToggleWatched: (id: string) => void; onDelete: (id: string) => void }) {
+    onToggleWatched: (id: string) => void; onDelete: (id: string) => void;
+    identity: Identity; onSetReview: (id: string, author: Identity, text: string | null) => void }) {
   const ownerClass = film.added_by === 'pig' ? 'badge-you' : 'badge-ta';
   const [showComment, setShowComment] = useState(false);
   const watched = film.status === 'watched';
@@ -61,6 +62,56 @@ export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete }:
           style={{ ...actionStyle, flex: 'none', color: '#ff8a8a',
             borderColor: 'rgba(255,138,138,.4)' }}>🗑</button>
       </div>
+      {watched && (
+        <ReviewSection film={film} identity={identity} onSetReview={onSetReview} />
+      )}
+    </div>
+  );
+}
+
+function ReviewSection({ film, identity, onSetReview }:
+  { film: Film; identity: Identity;
+    onSetReview: (id: string, author: Identity, text: string | null) => void }) {
+  const mine = identity === 'pig' ? film.review_pig : film.review_baby;
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(mine ?? '');
+
+  const save = () => {
+    onSetReview(film.id, identity, draft.trim() || null);
+    setEditing(false);
+  };
+
+  const line = (author: Identity, text: string | null) => text ? (
+    <div style={{ fontSize: 12, color: 'var(--ink)', lineHeight: 1.5, marginTop: 4 }}>
+      <b style={{ color: author === 'pig' ? 'var(--you)' : 'var(--ta)' }}>
+        {IDENTITY_LABEL[author]}：</b>{text}
+    </div>
+  ) : null;
+
+  return (
+    <div style={{ marginTop: 8, borderTop: '1px dashed rgba(233,196,106,.18)', paddingTop: 8 }}>
+      {line('pig', film.review_pig)}
+      {line('baby', film.review_baby)}
+      {editing ? (
+        <div style={{ marginTop: 6 }}>
+          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2}
+            placeholder="写两句短评…（像豆瓣短评）"
+            style={{ width: '100%', resize: 'vertical', fontFamily: 'inherit', fontSize: 12,
+              padding: 6, borderRadius: 8, border: '1px solid var(--gold)',
+              background: 'transparent', color: 'var(--ink)' }} />
+          <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+            <button onClick={save} style={{ ...actionStyle, flex: 'none', color: '#2a0a12',
+              background: 'var(--gold)', borderColor: 'var(--gold)' }}>保存</button>
+            <button onClick={() => { setDraft(mine ?? ''); setEditing(false); }}
+              style={{ ...actionStyle, flex: 'none' }}>取消</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setEditing(true)}
+          style={{ ...actionStyle, flex: 'none', marginTop: 6 }}>
+          {mine ? '编辑观后感' : '✍️ 写观后感'}
+        </button>
+      )}
     </div>
   );
 }

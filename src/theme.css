@@ -10,7 +10,7 @@ body {
   font-family:"PingFang SC",-apple-system,"Helvetica Neue",sans-serif;
   min-height:100vh;
 }
-.serif { font-family:Georgia,"Songti SC",serif; }
+.serif { font-family:"Caveat","Ma Shan Zheng","Songti SC",cursive; }
 button { cursor:pointer; font-family:inherit; }
 .badge-you { background:var(--you); color:#2a0a12; }
 .badge-ta  { background:var(--ta);  color:#06302b; }

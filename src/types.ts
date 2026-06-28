@@ -26,6 +26,8 @@ export interface Film {
   tmdb_id: number | null;
   overview: string | null;
   comment: string | null;
+  review_pig: string | null;
+  review_baby: string | null;
   category_id: string | null;
   added_by: Identity;
   status: 'watchlist' | 'watched';

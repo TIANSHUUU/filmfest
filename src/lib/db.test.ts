@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const fromMock = vi.fn();
 vi.mock('./supabase', () => ({ supabase: { from: (...a: any[]) => fromMock(...a) } }));
 
-import { addFilm, toggleVote } from './db';
+import { addFilm, toggleVote, setReview } from './db';
 
 beforeEach(() => fromMock.mockReset());
 
@@ -41,5 +41,27 @@ describe('toggleVote', () => {
 
     await toggleVote('f1', 'baby', false);
     expect(insert).toHaveBeenCalledWith({ film_id: 'f1', voter: 'baby' });
+  });
+});
+
+describe('setReview', () => {
+  it('updates the per-author review column', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const update = vi.fn(() => ({ eq }));
+    fromMock.mockReturnValue({ update });
+
+    await setReview('f1', 'pig', '后劲很大');
+    expect(fromMock).toHaveBeenCalledWith('films');
+    expect(update).toHaveBeenCalledWith({ review_pig: '后劲很大' });
+    expect(eq).toHaveBeenCalledWith('id', 'f1');
+  });
+
+  it('writes baby column for baby author and null to clear', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const update = vi.fn(() => ({ eq }));
+    fromMock.mockReturnValue({ update });
+
+    await setReview('f1', 'baby', null);
+    expect(update).toHaveBeenCalledWith({ review_baby: null });
   });
 });

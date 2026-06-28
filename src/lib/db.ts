@@ -47,6 +47,11 @@ export async function deleteFilm(id: string) {
   const { error } = await supabase.from('films').delete().eq('id', id);
   if (error) throw error;
 }
+export async function setReview(id: string, author: Identity, text: string | null) {
+  const column = author === 'pig' ? 'review_pig' : 'review_baby';
+  const { error } = await supabase.from('films').update({ [column]: text }).eq('id', id);
+  if (error) throw error;
+}
 
 // ---- votes ----
 export async function listVotes(): Promise<Vote[]> {

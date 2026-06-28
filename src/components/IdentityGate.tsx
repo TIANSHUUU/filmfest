@@ -17,7 +17,7 @@ export function IdentityGate({ onReady }: { onReady: (id: Identity) => void }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center',
       justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
-      <h1 className="serif" style={{ color: 'var(--gold)' }}>我们的电影节</h1>
+      <h1 className="serif" style={{ color: 'var(--gold)', fontSize: 44 }}>Tapasta电影节</h1>
       {!unlocked ? (
         <>
           <input className="serif" placeholder="共享口令" type="password"

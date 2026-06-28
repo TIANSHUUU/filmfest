@@ -21,5 +21,6 @@ export function useFilms() {
     add: db.addFilm,
     setStatus: db.setFilmStatus,
     remove: db.deleteFilm,
+    setReview: db.setReview,
   };
 }

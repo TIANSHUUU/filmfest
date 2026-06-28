@@ -5,6 +5,7 @@ import type { Film, Vote } from '../types';
 
 const mk = (id: string, title: string): Film => ({
   id, title, year: 2020, poster_url: null, tmdb_id: null, overview: '', comment: null,
+  review_pig: null, review_baby: null,
   category_id: null, added_by: 'pig', status: 'watchlist', created_at: '',
 });
 

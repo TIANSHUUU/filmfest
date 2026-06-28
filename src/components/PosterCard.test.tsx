@@ -6,18 +6,20 @@ import type { Film } from '../types';
 
 const base: Film = {
   id: 'f1', title: '迷雾长夜', year: 2021, poster_url: null, tmdb_id: 1,
-  overview: '', comment: null, category_id: 'c1', added_by: 'pig', status: 'watchlist', created_at: '',
+  overview: '', comment: null, review_pig: null, review_baby: null,
+  category_id: 'c1', added_by: 'pig', status: 'watchlist', created_at: '',
 };
 const zero = { pig: false, baby: false, count: 0 };
-const noop = {
+const common = {
   onVote: vi.fn(), onToggleWatched: vi.fn(), onDelete: vi.fn(),
+  onSetReview: vi.fn(), identity: 'pig' as const,
 };
 
 describe('PosterCard', () => {
   it('shows title, year, owner badge and triggers vote', async () => {
     const onVote = vi.fn();
     render(<PosterCard film={base} tally={{ pig: true, baby: false, count: 1 }}
-      onVote={onVote} onToggleWatched={vi.fn()} onDelete={vi.fn()} />);
+      {...common} onVote={onVote} />);
     expect(screen.getByText('迷雾长夜')).toBeInTheDocument();
     expect(screen.getByText('2021')).toBeInTheDocument();
     expect(screen.getByLabelText('owner-pig')).toBeInTheDocument();
@@ -26,13 +28,13 @@ describe('PosterCard', () => {
   });
 
   it('hides the comment icon when there is no comment', () => {
-    render(<PosterCard film={base} tally={zero} {...noop} />);
+    render(<PosterCard film={base} tally={zero} {...common} />);
     expect(screen.queryByLabelText('查看评论')).not.toBeInTheDocument();
   });
 
   it('shows 💬 and toggles a comment popover when the film has a comment', async () => {
     const film = { ...base, comment: '诺兰神作，必看' };
-    render(<PosterCard film={film} tally={zero} {...noop} />);
+    render(<PosterCard film={film} tally={zero} {...common} />);
 
     const btn = screen.getByLabelText('查看评论');
     expect(screen.queryByText('诺兰神作，必看')).not.toBeInTheDocument();
@@ -46,7 +48,7 @@ describe('PosterCard', () => {
     const onToggleWatched = vi.fn();
     const onDelete = vi.fn();
     render(<PosterCard film={base} tally={zero}
-      onVote={vi.fn()} onToggleWatched={onToggleWatched} onDelete={onDelete} />);
+      {...common} onToggleWatched={onToggleWatched} onDelete={onDelete} />);
 
     await userEvent.click(screen.getByRole('button', { name: /看过/ }));
     expect(onToggleWatched).toHaveBeenCalledWith('f1');
@@ -56,8 +58,31 @@ describe('PosterCard', () => {
   });
 
   it('shows a 退回待看 action for watched films', () => {
-    render(<PosterCard film={{ ...base, status: 'watched' }} tally={zero} {...noop} />);
+    render(<PosterCard film={{ ...base, status: 'watched' }} tally={zero} {...common} />);
     expect(screen.getByRole('button', { name: /退回/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /看过/ })).not.toBeInTheDocument();
+  });
+
+  it('has no review editor in the watchlist view', () => {
+    render(<PosterCard film={base} tally={zero} {...common} />);
+    expect(screen.queryByRole('button', { name: /观后感/ })).not.toBeInTheDocument();
+  });
+
+  it('lets the current user write a review on a watched film', async () => {
+    const onSetReview = vi.fn();
+    const film = { ...base, status: 'watched' as const };
+    render(<PosterCard film={film} tally={zero} {...common} identity="pig" onSetReview={onSetReview} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /观后感/ }));
+    await userEvent.type(screen.getByPlaceholderText(/短评/), '后劲很大');
+    await userEvent.click(screen.getByText('保存'));
+    expect(onSetReview).toHaveBeenCalledWith('f1', 'pig', '后劲很大');
+  });
+
+  it('displays both partners reviews on a watched film', () => {
+    const film = { ...base, status: 'watched' as const, review_pig: '好看哭了', review_baby: '很催泪' };
+    render(<PosterCard film={film} tally={zero} {...common} />);
+    expect(screen.getByText(/好看哭了/)).toBeInTheDocument();
+    expect(screen.getByText(/很催泪/)).toBeInTheDocument();
   });
 });
