@@ -24,11 +24,62 @@ describe('AddFilmModal', () => {
     await userEvent.click(screen.getByText('搜索'));
     await screen.findByText('Whiplash');
     await userEvent.click(screen.getByText('Whiplash'));
+    await userEvent.type(screen.getByPlaceholderText(/推荐理由/), '年度最佳');
     await userEvent.click(screen.getByText('加入片单'));
 
     expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Whiplash', year: 2014, poster_url: 'p', tmdb_id: 1,
-      category_id: 'c1', added_by: 'pig',
+      category_id: 'c1', added_by: 'pig', comment: '年度最佳',
     }));
+  });
+
+  it('submits null comment when left blank', async () => {
+    searchMovies.mockResolvedValue([
+      { tmdbId: 1, title: 'Whiplash', year: 2014, posterUrl: 'p', overview: 'o' },
+    ]);
+    const onAdd = vi.fn().mockResolvedValue(undefined);
+    render(<AddFilmModal categories={cats} identity="pig" onAdd={onAdd} onClose={vi.fn()} />);
+
+    await userEvent.type(screen.getByPlaceholderText('片名…'), 'whiplash');
+    await userEvent.click(screen.getByText('搜索'));
+    await screen.findByText('Whiplash');
+    await userEvent.click(screen.getByText('Whiplash'));
+    await userEvent.click(screen.getByText('加入片单'));
+
+    expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({ comment: null }));
+  });
+
+  it('submits only once on a rapid double-click', async () => {
+    searchMovies.mockResolvedValue([
+      { tmdbId: 1, title: 'Whiplash', year: 2014, posterUrl: 'p', overview: 'o' },
+    ]);
+    const onAdd = vi.fn().mockResolvedValue(undefined);
+    render(<AddFilmModal categories={cats} identity="pig" onAdd={onAdd} onClose={vi.fn()} />);
+
+    await userEvent.type(screen.getByPlaceholderText('片名…'), 'whiplash');
+    await userEvent.click(screen.getByText('搜索'));
+    await screen.findByText('Whiplash');
+    await userEvent.click(screen.getByText('Whiplash'));
+    await userEvent.dblClick(screen.getByText('加入片单'));
+
+    expect(onAdd).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks adding a film already in the same list and does not submit', async () => {
+    searchMovies.mockResolvedValue([
+      { tmdbId: 1, title: 'Whiplash', year: 2014, posterUrl: 'p', overview: 'o' },
+    ]);
+    const onAdd = vi.fn().mockResolvedValue(undefined);
+    render(<AddFilmModal categories={cats} identity="pig" onAdd={onAdd} onClose={vi.fn()}
+      isDuplicate={() => true} />);
+
+    await userEvent.type(screen.getByPlaceholderText('片名…'), 'whiplash');
+    await userEvent.click(screen.getByText('搜索'));
+    await screen.findByText('Whiplash');
+    await userEvent.click(screen.getByText('Whiplash'));
+    await userEvent.click(screen.getByText('加入片单'));
+
+    expect(onAdd).not.toHaveBeenCalled();
+    expect(screen.getByText(/已经在该片单/)).toBeInTheDocument();
   });
 });

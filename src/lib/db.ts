@@ -31,7 +31,7 @@ export async function listFilms(): Promise<Film[]> {
 }
 export async function addFilm(input: {
   title: string; year: number | null; poster_url: string | null;
-  tmdb_id: number | null; overview: string | null;
+  tmdb_id: number | null; overview: string | null; comment: string | null;
   category_id: string | null; added_by: Identity;
 }): Promise<Film> {
   const { data, error } = await supabase.from('films')

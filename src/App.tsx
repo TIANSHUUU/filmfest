@@ -46,6 +46,9 @@ function Main({ identity }: { identity: Identity }) {
       {showAdd && (
         <AddFilmModal categories={cats.categories} identity={identity}
           onAdd={async (input) => { await films.add(input); await films.refresh(); }}
+          isDuplicate={(tmdbId, categoryId) =>
+            tmdbId != null && films.films.some(
+              (f) => f.tmdb_id === tmdbId && f.category_id === categoryId)}
           onClose={() => setShowAdd(false)} />
       )}
       {showCats && (

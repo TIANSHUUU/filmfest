@@ -8,7 +8,7 @@ const cats: Category[] = [
   { id: 'c2', name: '科幻', sort_order: 1, created_by: 'baby', created_at: '' },
 ];
 const mk = (id: string, cat: string | null): Film => ({
-  id, title: 't' + id, year: 2020, poster_url: null, tmdb_id: null, overview: '',
+  id, title: 't' + id, year: 2020, poster_url: null, tmdb_id: null, overview: '', comment: null,
   category_id: cat, added_by: 'pig', status: 'watchlist', created_at: '',
 });
 

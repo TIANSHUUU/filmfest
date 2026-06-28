@@ -1,22 +1,26 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { Category, Identity } from '../types';
 import { searchMovies, type TmdbMovie } from '../lib/tmdb';
 
 interface AddInput {
   title: string; year: number | null; poster_url: string | null;
-  tmdb_id: number | null; overview: string | null;
+  tmdb_id: number | null; overview: string | null; comment: string | null;
   category_id: string | null; added_by: Identity;
 }
 
-export function AddFilmModal({ categories, identity, onAdd, onClose }: {
+export function AddFilmModal({ categories, identity, onAdd, onClose, isDuplicate }: {
   categories: Category[]; identity: Identity;
   onAdd: (input: AddInput) => Promise<void>; onClose: () => void;
+  isDuplicate?: (tmdbId: number | null, categoryId: string | null) => boolean;
 }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<TmdbMovie[]>([]);
   const [picked, setPicked] = useState<TmdbMovie | null>(null);
   const [categoryId, setCategoryId] = useState<string>(categories[0]?.id ?? '');
+  const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [dupMsg, setDupMsg] = useState('');
+  const submittingRef = useRef(false);
 
   const doSearch = async () => {
     setLoading(true);
@@ -24,11 +28,18 @@ export function AddFilmModal({ categories, identity, onAdd, onClose }: {
   };
 
   const submit = async () => {
-    if (!picked) return;
+    if (!picked || submittingRef.current) return;
+    const targetCategory = categoryId || null;
+    if (isDuplicate?.(picked.tmdbId, targetCategory)) {
+      setDupMsg('这部已经在该片单里啦～');
+      return;
+    }
+    submittingRef.current = true;
     await onAdd({
       title: picked.title, year: picked.year, poster_url: picked.posterUrl,
       tmdb_id: picked.tmdbId, overview: picked.overview,
-      category_id: categoryId || null, added_by: identity,
+      comment: comment.trim() || null,
+      category_id: targetCategory, added_by: identity,
     });
     onClose();
   };
@@ -54,13 +65,20 @@ export function AddFilmModal({ categories, identity, onAdd, onClose }: {
         ))}
       </div>
       {picked && (
-        <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span>归入</span>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} style={inputStyle}>
-            <option value="">未分类</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-          <button onClick={submit} style={btnStyle}>加入片单</button>
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <span>归入</span>
+            <select value={categoryId}
+              onChange={(e) => { setCategoryId(e.target.value); setDupMsg(''); }} style={inputStyle}>
+              <option value="">未分类</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <textarea placeholder="💬 推荐理由 / 为什么想看（可选）"
+            value={comment} onChange={(e) => setComment(e.target.value)}
+            rows={2} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
+          {dupMsg && <p style={{ color: '#ff8a8a', margin: 0, fontSize: 13 }}>{dupMsg}</p>}
+          <button onClick={submit} style={{ ...btnStyle, alignSelf: 'flex-start' }}>加入片单</button>
         </div>
       )}
     </Overlay>
