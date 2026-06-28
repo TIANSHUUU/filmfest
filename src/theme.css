@@ -1,2 +1,16 @@
-/* theme.css — 红毯主题，下个任务填充 */
-:root { --gold:#e9c46a; }
+:root {
+  --bg:#120407; --gold:#e9c46a; --gold-bright:#f5d27e; --crimson:#6a1b2a;
+  --you:#e9c46a; --ta:#5ad1c2; --ink:#f3e3c0;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  background:var(--bg);
+  background-image:radial-gradient(circle at 50% -10%, #3a0d1a, var(--bg) 55%);
+  color:var(--ink);
+  font-family:"PingFang SC",-apple-system,"Helvetica Neue",sans-serif;
+  min-height:100vh;
+}
+.serif { font-family:Georgia,"Songti SC",serif; }
+button { cursor:pointer; font-family:inherit; }
+.badge-you { background:var(--you); color:#2a0a12; }
+.badge-ta  { background:var(--ta);  color:#06302b; }
