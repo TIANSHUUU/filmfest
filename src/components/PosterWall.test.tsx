@@ -15,14 +15,16 @@ const mk = (id: string, cat: string | null): Film => ({
 describe('PosterWall', () => {
   it('groups films by category and shows uncategorized section', () => {
     render(<PosterWall categories={cats} votes={[]}
-      films={[mk('a', 'c1'), mk('b', 'c2'), mk('c', null)]} onVote={vi.fn()} />);
+      films={[mk('a', 'c1'), mk('b', 'c2'), mk('c', null)]}
+      onVote={vi.fn()} onToggleWatched={vi.fn()} onDelete={vi.fn()} />);
     expect(screen.getByText(/剧情/)).toBeInTheDocument();
     expect(screen.getByText(/科幻/)).toBeInTheDocument();
     expect(screen.getByText(/未分类/)).toBeInTheDocument();
   });
 
   it('omits empty categories', () => {
-    render(<PosterWall categories={cats} votes={[]} films={[mk('a', 'c1')]} onVote={vi.fn()} />);
+    render(<PosterWall categories={cats} votes={[]} films={[mk('a', 'c1')]}
+      onVote={vi.fn()} onToggleWatched={vi.fn()} onDelete={vi.fn()} />);
     expect(screen.queryByText(/科幻/)).not.toBeInTheDocument();
   });
 });

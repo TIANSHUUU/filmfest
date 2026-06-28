@@ -23,9 +23,32 @@ function Main({ identity }: { identity: Identity }) {
   const votes = useVotes();
   const [showAdd, setShowAdd] = useState(false);
   const [showCats, setShowCats] = useState(false);
+  const [view, setView] = useState<'watchlist' | 'watched'>('watchlist');
 
   const watchlist = films.films.filter((f) => f.status === 'watchlist');
+  const watched = films.films.filter((f) => f.status === 'watched');
+  const shown = view === 'watchlist' ? watchlist : watched;
   const onVote = (filmId: string) => votes.toggle(filmId, identity);
+
+  const onToggleWatched = async (id: string) => {
+    const f = films.films.find((x) => x.id === id);
+    if (!f) return;
+    await films.setStatus(id, f.status === 'watchlist' ? 'watched' : 'watchlist');
+    await films.refresh();
+  };
+
+  const onDelete = async (id: string) => {
+    const f = films.films.find((x) => x.id === id);
+    if (f && window.confirm(`确定删除《${f.title}》？`)) {
+      await films.remove(id);
+      await films.refresh();
+    }
+  };
+
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    fontSize: 22, fontWeight: 700, padding: 0, background: 'transparent', border: 'none',
+    color: active ? '#fff' : '#7a6748', borderBottom: active ? '2px solid var(--gold)' : '2px solid transparent',
+  });
 
   return (
     <div style={{ paddingBottom: 80 }}>
@@ -34,12 +57,20 @@ function Main({ identity }: { identity: Identity }) {
         onManageCategories={() => setShowCats(true)} />
 
       <div style={{ padding: '22px 32px 4px' }}>
-        <div className="serif" style={{ fontSize: 26, fontWeight: 700, color: '#fff' }}>待看片单</div>
-        <p style={{ color: '#bfa884', marginTop: 4, fontSize: 13 }}>
-          搜片加入、按分类陈列。右下角随时投票，决定下个 movie night 看哪部 🏆</p>
+        <div style={{ display: 'flex', gap: 18, alignItems: 'baseline' }}>
+          <button className="serif" style={tabStyle(view === 'watchlist')}
+            onClick={() => setView('watchlist')}>待看片单</button>
+          <button className="serif" style={tabStyle(view === 'watched')}
+            onClick={() => setView('watched')}>看过 ({watched.length})</button>
+        </div>
+        <p style={{ color: '#bfa884', marginTop: 6, fontSize: 13 }}>
+          {view === 'watchlist'
+            ? '搜片加入、按分类陈列。右下角随时投票，决定下个 movie night 看哪部 🏆'
+            : '我们一起看过的电影，按分类珍藏 🎞️'}</p>
       </div>
 
-      <PosterWall films={watchlist} categories={cats.categories} votes={votes.votes} onVote={onVote} />
+      <PosterWall films={shown} categories={cats.categories} votes={votes.votes}
+        onVote={onVote} onToggleWatched={onToggleWatched} onDelete={onDelete} />
 
       <VotingWidget films={watchlist} votes={votes.votes} onVote={onVote} />
 

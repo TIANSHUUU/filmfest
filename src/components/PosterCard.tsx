@@ -3,10 +3,12 @@ import type { Film } from '../types';
 import { IDENTITY_BADGE } from '../types';
 import type { Tally } from '../lib/votes';
 
-export function PosterCard({ film, tally, onVote }:
-  { film: Film; tally: Tally; onVote: (id: string) => void }) {
+export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete }:
+  { film: Film; tally: Tally; onVote: (id: string) => void;
+    onToggleWatched: (id: string) => void; onDelete: (id: string) => void }) {
   const ownerClass = film.added_by === 'pig' ? 'badge-you' : 'badge-ta';
   const [showComment, setShowComment] = useState(false);
+  const watched = film.status === 'watched';
   return (
     <div className="film">
       <div className="poster" style={{
@@ -51,6 +53,19 @@ export function PosterCard({ film, tally, onVote }:
       <div className="serif" style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginTop: 4 }}>
         {film.poster_url ? film.title : ''}
       </div>
+      <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+        <button onClick={() => onToggleWatched(film.id)} style={actionStyle}>
+          {watched ? '↩ 退回待看' : '✓ 看过'}
+        </button>
+        <button aria-label="删除" onClick={() => onDelete(film.id)}
+          style={{ ...actionStyle, flex: 'none', color: '#ff8a8a',
+            borderColor: 'rgba(255,138,138,.4)' }}>🗑</button>
+      </div>
     </div>
   );
 }
+
+const actionStyle: React.CSSProperties = {
+  flex: 1, background: 'transparent', border: '1px solid rgba(233,196,106,.3)',
+  color: '#c9b58a', borderRadius: 12, fontSize: 11, fontWeight: 600, padding: '4px 8px',
+};
