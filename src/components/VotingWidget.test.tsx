@@ -1,7 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { VotingWidget } from './VotingWidget';
 import type { Film, Vote } from '../types';
+
+afterEach(() => vi.unstubAllGlobals());
 
 const mk = (id: string, title: string): Film => ({
   id, title, year: 2020, poster_url: null, tmdb_id: null, overview: '', comment: null,
@@ -20,5 +23,27 @@ describe('VotingWidget', () => {
     expect(screen.getByText('迷雾长夜')).toBeInTheDocument();
     expect(screen.getByText('星河彼岸')).toBeInTheDocument();
     expect(screen.queryByText('没人投')).not.toBeInTheDocument();
+  });
+
+  it('starts collapsed on small screens', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }));
+    const votes: Vote[] = [{ id: '1', film_id: 'a', voter: 'pig', created_at: '' }];
+    render(<VotingWidget films={[mk('a', '迷雾长夜')]} votes={votes} onVote={vi.fn()} />);
+    expect(screen.queryByText('迷雾长夜')).not.toBeInTheDocument();
+  });
+
+  it('starts open on wide screens', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }));
+    const votes: Vote[] = [{ id: '1', film_id: 'a', voter: 'pig', created_at: '' }];
+    render(<VotingWidget films={[mk('a', '迷雾长夜')]} votes={votes} onVote={vi.fn()} />);
+    expect(screen.getByText('迷雾长夜')).toBeInTheDocument();
+  });
+
+  it('can be opened manually after starting collapsed', async () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }));
+    const votes: Vote[] = [{ id: '1', film_id: 'a', voter: 'pig', created_at: '' }];
+    render(<VotingWidget films={[mk('a', '迷雾长夜')]} votes={votes} onVote={vi.fn()} />);
+    await userEvent.click(screen.getByText(/投票中/));
+    expect(screen.getByText('迷雾长夜')).toBeInTheDocument();
   });
 });

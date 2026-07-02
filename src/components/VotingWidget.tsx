@@ -4,7 +4,8 @@ import { filmsInBallot, tallyForFilm } from '../lib/votes';
 
 export function VotingWidget({ films, votes, onVote }:
   { films: Film[]; votes: Vote[]; onVote: (id: string) => void }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(() =>
+    typeof window.matchMedia !== 'function' || !window.matchMedia('(max-width: 640px)').matches);
   const ballotIds = new Set(filmsInBallot(votes));
   const items = films.filter((f) => ballotIds.has(f.id));
 

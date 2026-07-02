@@ -10,6 +10,7 @@ import { PosterWall } from './components/PosterWall';
 import { VotingWidget } from './components/VotingWidget';
 import { AddFilmModal } from './components/AddFilmModal';
 import { CategoryModal } from './components/CategoryModal';
+import { CategoryFilter } from './components/CategoryFilter';
 
 export default function App() {
   const { identity, choose } = useIdentity();
@@ -24,10 +25,18 @@ function Main({ identity }: { identity: Identity }) {
   const [showAdd, setShowAdd] = useState(false);
   const [showCats, setShowCats] = useState(false);
   const [view, setView] = useState<'watchlist' | 'watched'>('watchlist');
+  const [catFilter, setCatFilter] = useState('');
 
   const watchlist = films.films.filter((f) => f.status === 'watchlist');
   const watched = films.films.filter((f) => f.status === 'watched');
   const shown = view === 'watchlist' ? watchlist : watched;
+  const isUncategorized = (f: typeof shown[number]) =>
+    !f.category_id || !cats.categories.some((c) => c.id === f.category_id);
+  const shownCats = catFilter === '' ? cats.categories
+    : cats.categories.filter((c) => c.id === catFilter);
+  const shownFilms = catFilter === '' ? shown
+    : catFilter === '__none' ? shown.filter(isUncategorized)
+    : shown.filter((f) => f.category_id === catFilter);
   const onVote = (filmId: string) => votes.toggle(filmId, identity);
 
   const onToggleWatched = async (id: string) => {
@@ -79,11 +88,13 @@ function Main({ identity }: { identity: Identity }) {
         onManageCategories={() => setShowCats(true)} />
 
       <div className="header-pad">
-        <div style={{ display: 'flex', gap: 18, alignItems: 'baseline' }}>
+        <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
           <button className="serif" style={tabStyle(view === 'watchlist')}
             onClick={() => setView('watchlist')}>待看片单</button>
           <button className="serif" style={tabStyle(view === 'watched')}
             onClick={() => setView('watched')}>看过 ({watched.length})</button>
+          <CategoryFilter categories={cats.categories} value={catFilter}
+            onChange={setCatFilter} />
         </div>
         <p style={{ color: '#bfa884', marginTop: 6, fontSize: 13 }}>
           {view === 'watchlist'
@@ -91,7 +102,7 @@ function Main({ identity }: { identity: Identity }) {
             : '我们一起看过的电影，按分类珍藏 🎞️'}</p>
       </div>
 
-      <PosterWall films={shown} categories={cats.categories} votes={votes.votes}
+      <PosterWall films={shownFilms} categories={shownCats} votes={votes.votes}
         onVote={onVote} onToggleWatched={onToggleWatched} onDelete={onDelete}
         onRenameCategory={onRenameCategory} identity={identity}
         onSetReview={onSetReview} onSetComment={onSetComment} onSetCategory={onSetCategory} />
