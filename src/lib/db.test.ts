@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const fromMock = vi.fn();
 vi.mock('./supabase', () => ({ supabase: { from: (...a: any[]) => fromMock(...a) } }));
 
-import { addFilm, toggleVote, setReview, setComment } from './db';
+import { addFilm, toggleVote, setReview, setComment, setFilmCategory } from './db';
 
 beforeEach(() => fromMock.mockReset());
 
@@ -63,6 +63,28 @@ describe('setReview', () => {
 
     await setReview('f1', 'baby', null);
     expect(update).toHaveBeenCalledWith({ review_baby: null });
+  });
+});
+
+describe('setFilmCategory', () => {
+  it('updates the category_id column', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const update = vi.fn(() => ({ eq }));
+    fromMock.mockReturnValue({ update });
+
+    await setFilmCategory('f1', 'c2');
+    expect(fromMock).toHaveBeenCalledWith('films');
+    expect(update).toHaveBeenCalledWith({ category_id: 'c2' });
+    expect(eq).toHaveBeenCalledWith('id', 'f1');
+  });
+
+  it('clears the category with null', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const update = vi.fn(() => ({ eq }));
+    fromMock.mockReturnValue({ update });
+
+    await setFilmCategory('f1', null);
+    expect(update).toHaveBeenCalledWith({ category_id: null });
   });
 });
 

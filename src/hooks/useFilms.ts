@@ -23,5 +23,6 @@ export function useFilms() {
     remove: db.deleteFilm,
     setReview: db.setReview,
     setComment: db.setComment,
+    setCategory: db.setFilmCategory,
   };
 }

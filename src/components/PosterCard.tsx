@@ -1,18 +1,21 @@
 import { useState } from 'react';
-import type { Film, Identity } from '../types';
+import type { Film, Category, Identity } from '../types';
 import { IDENTITY_BADGE, IDENTITY_LABEL } from '../types';
 import type { Tally } from '../lib/votes';
 
-export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete, identity,
-  onSetReview, onSetComment }:
-  { film: Film; tally: Tally; onVote: (id: string) => void;
+export function PosterCard({ film, tally, categories, onVote, onToggleWatched, onDelete,
+  identity, onSetReview, onSetComment, onSetCategory }:
+  { film: Film; tally: Tally; categories: Category[]; onVote: (id: string) => void;
     onToggleWatched: (id: string) => void; onDelete: (id: string) => void;
     identity: Identity; onSetReview: (id: string, author: Identity, text: string | null) => void;
-    onSetComment: (id: string, text: string | null) => void }) {
+    onSetComment: (id: string, text: string | null) => void;
+    onSetCategory: (id: string, categoryId: string | null) => void }) {
   const ownerClass = film.added_by === 'pig' ? 'badge-you' : 'badge-ta';
   const [showComment, setShowComment] = useState(false);
   const [editComment, setEditComment] = useState(false);
   const [commentDraft, setCommentDraft] = useState(film.comment ?? '');
+  const [overviewOpen, setOverviewOpen] = useState(false);
+  const [editCategory, setEditCategory] = useState(false);
   const watched = film.status === 'watched';
 
   const startEditComment = () => { setCommentDraft(film.comment ?? ''); setEditComment(true); };
@@ -21,11 +24,17 @@ export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete, ide
     setEditComment(false);
     setShowComment(false);
   };
+  const openTmdb = film.tmdb_id
+    ? () => window.open(`https://www.themoviedb.org/movie/${film.tmdb_id}?language=zh-CN`,
+        '_blank', 'noopener')
+    : undefined;
   return (
     <div className="film">
-      <div className="poster" style={{
-        height: 190, borderRadius: 9, position: 'relative', overflow: 'hidden',
+      <div className="poster" role={openTmdb ? 'link' : undefined}
+        aria-label={openTmdb ? '打开 TMDB 页面' : undefined} onClick={openTmdb} style={{
+        aspectRatio: '2 / 3', borderRadius: 9, position: 'relative', overflow: 'hidden',
         display: 'flex', alignItems: 'flex-end', padding: 8,
+        cursor: openTmdb ? 'pointer' : undefined,
         border: '1px solid rgba(255,255,255,.08)', boxShadow: '0 6px 18px rgba(0,0,0,.45)',
         backgroundImage: film.poster_url ? `url(${film.poster_url})` : undefined,
         backgroundSize: 'cover', backgroundPosition: 'center',
@@ -35,13 +44,15 @@ export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete, ide
           position: 'absolute', top: 7, right: 7, width: 24, height: 24, borderRadius: '50%',
           fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center',
           justifyContent: 'center' }}>{IDENTITY_BADGE[film.added_by]}</span>
-        <button aria-label="想看理由" onClick={() => setShowComment((s) => !s)} style={{
+        <button aria-label="想看理由"
+          onClick={(e) => { e.stopPropagation(); setShowComment((s) => !s); }} style={{
           position: 'absolute', top: 7, left: 7, width: 24, height: 24, borderRadius: '50%',
           border: 'none', background: 'rgba(18,4,7,.78)', color: 'var(--gold)',
           opacity: film.comment ? 1 : 0.55,
           fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
         {showComment && (
-          <div style={{ position: 'absolute', top: 36, left: 7, right: 7, zIndex: 2,
+          <div onClick={(e) => e.stopPropagation()}
+            style={{ position: 'absolute', top: 36, left: 7, right: 7, zIndex: 2,
             background: 'rgba(18,4,7,.96)', border: '1px solid rgba(233,196,106,.5)',
             borderRadius: 8, padding: '8px 10px', color: 'var(--ink)', fontSize: 12,
             lineHeight: 1.5, boxShadow: '0 6px 18px rgba(0,0,0,.6)' }}>
@@ -77,26 +88,52 @@ export function PosterCard({ film, tally, onVote, onToggleWatched, onDelete, ide
         )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 7 }}>
-        <span style={{ color: '#9a7d52', fontSize: 11 }}>{film.year ?? ''}</span>
-        <button onClick={() => onVote(film.id)} style={{
-          background: tally.count ? 'var(--gold)' : 'rgba(233,196,106,.14)',
-          color: tally.count ? '#2a0a12' : 'var(--gold)',
-          border: '1px solid rgba(233,196,106,.45)', borderRadius: 14,
-          fontSize: 11, fontWeight: 700, padding: '4px 10px' }}>
-          ♥ 投 {tally.count > 0 ? tally.count : ''}
-        </button>
+        <span style={{ color: '#9a7d52', fontSize: 12 }}>{film.year ?? ''}</span>
+        {!watched && (
+          <button onClick={() => onVote(film.id)} style={{
+            background: tally.count ? 'var(--gold)' : 'rgba(233,196,106,.14)',
+            color: tally.count ? '#2a0a12' : 'var(--gold)',
+            border: '1px solid rgba(233,196,106,.45)', borderRadius: 14,
+            fontSize: 12, fontWeight: 700, padding: '4px 10px' }}>
+            ♥ 投 {tally.count > 0 ? tally.count : ''}
+          </button>
+        )}
       </div>
-      <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginTop: 6, lineHeight: 1.3 }}>
+      <div style={{ fontSize: 17, fontWeight: 700, color: '#fff', marginTop: 6, lineHeight: 1.3 }}>
         {film.poster_url ? film.title : ''}
       </div>
-      <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-        <button onClick={() => onToggleWatched(film.id)} style={actionStyle}>
+      {film.overview && (
+        <div aria-label="简介" role="button" aria-expanded={overviewOpen}
+          onClick={() => setOverviewOpen((s) => !s)}
+          className={overviewOpen ? undefined : 'clamp-2'}
+          style={{ fontSize: 12, color: '#bfa884', marginTop: 4, lineHeight: 1.55,
+            cursor: 'pointer' }}>
+          {film.overview}
+        </div>
+      )}
+      <div className="action-row" style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+        <button onClick={() => onToggleWatched(film.id)}
+          style={{ ...actionStyle, whiteSpace: 'nowrap' }}>
           {watched ? '↩ 退回待看' : '✓ 看过'}
         </button>
+        <button aria-label="编辑分类" onClick={() => setEditCategory((s) => !s)}
+          style={{ ...actionStyle, flex: 'none' }}>✏️</button>
         <button aria-label="删除" onClick={() => onDelete(film.id)}
           style={{ ...actionStyle, flex: 'none', color: '#ff8a8a',
             borderColor: 'rgba(255,138,138,.4)' }}>🗑</button>
       </div>
+      {editCategory && (
+        <select aria-label="选择片单" value={film.category_id ?? ''}
+          onChange={(e) => { onSetCategory(film.id, e.target.value || null); setEditCategory(false); }}
+          style={{ width: '100%', marginTop: 6, padding: '5px 6px', borderRadius: 8,
+            fontSize: 12, fontFamily: 'inherit', background: '#2a0a12',
+            color: 'var(--ink)', border: '1px solid var(--gold)' }}>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+          <option value="">未分类</option>
+        </select>
+      )}
       {watched && (
         <ReviewSection film={film} identity={identity} onSetReview={onSetReview} />
       )}
@@ -153,5 +190,5 @@ function ReviewSection({ film, identity, onSetReview }:
 
 const actionStyle: React.CSSProperties = {
   flex: 1, background: 'transparent', border: '1px solid rgba(233,196,106,.3)',
-  color: '#c9b58a', borderRadius: 12, fontSize: 11, fontWeight: 600, padding: '4px 8px',
+  color: '#c9b58a', borderRadius: 12, fontSize: 12, fontWeight: 600, padding: '4px 8px',
 };

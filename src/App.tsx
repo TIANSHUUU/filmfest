@@ -62,6 +62,11 @@ function Main({ identity }: { identity: Identity }) {
     await films.refresh();
   };
 
+  const onSetCategory = async (id: string, categoryId: string | null) => {
+    await films.setCategory(id, categoryId);
+    await films.refresh();
+  };
+
   const tabStyle = (active: boolean): React.CSSProperties => ({
     fontSize: 22, fontWeight: 700, padding: 0, background: 'transparent', border: 'none',
     color: active ? '#fff' : '#7a6748', borderBottom: active ? '2px solid var(--gold)' : '2px solid transparent',
@@ -73,7 +78,7 @@ function Main({ identity }: { identity: Identity }) {
         onAddFilm={() => setShowAdd(true)}
         onManageCategories={() => setShowCats(true)} />
 
-      <div style={{ padding: '22px 32px 4px' }}>
+      <div className="header-pad">
         <div style={{ display: 'flex', gap: 18, alignItems: 'baseline' }}>
           <button className="serif" style={tabStyle(view === 'watchlist')}
             onClick={() => setView('watchlist')}>待看片单</button>
@@ -89,7 +94,7 @@ function Main({ identity }: { identity: Identity }) {
       <PosterWall films={shown} categories={cats.categories} votes={votes.votes}
         onVote={onVote} onToggleWatched={onToggleWatched} onDelete={onDelete}
         onRenameCategory={onRenameCategory} identity={identity}
-        onSetReview={onSetReview} onSetComment={onSetComment} />
+        onSetReview={onSetReview} onSetComment={onSetComment} onSetCategory={onSetCategory} />
 
       <VotingWidget films={watchlist} votes={votes.votes} onVote={onVote} />
 
