@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { Category, Film, Vote, Identity } from '../types';
+import { sortFilms } from './films';
 
 // ---- categories ----
 export async function listCategories(): Promise<Category[]> {
@@ -27,7 +28,7 @@ export async function listFilms(): Promise<Film[]> {
   const { data, error } = await supabase.from('films').select('*')
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data as Film[];
+  return sortFilms(data as Film[]);
 }
 export async function addFilm(input: {
   title: string; year: number | null; poster_url: string | null;
@@ -55,6 +56,13 @@ export async function setReview(id: string, author: Identity, text: string | nul
 export async function setFilmCategory(id: string, category_id: string | null) {
   const { error } = await supabase.from('films').update({ category_id }).eq('id', id);
   if (error) throw error;
+}
+export async function setFilmOrder(ids: string[]) {
+  for (const [i, id] of ids.entries()) {
+    const { error } = await supabase.from('films')
+      .update({ sort_order: i + 1 }).eq('id', id);
+    if (error) throw error;
+  }
 }
 export async function setComment(id: string, text: string | null) {
   const { error } = await supabase.from('films').update({ comment: text }).eq('id', id);

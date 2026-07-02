@@ -19,6 +19,7 @@ create table films (
   category_id uuid references categories(id) on delete set null,
   added_by text not null check (added_by in ('pig','baby')),
   status text not null default 'watchlist' check (status in ('watchlist','watched')),
+  sort_order int not null default 0,
   created_at timestamptz not null default now()
 );
 
@@ -41,3 +42,6 @@ create policy "anon all" on votes for all using (true) with check (true);
 -- 开启 Realtime（votes 用于实时投票）
 alter publication supabase_realtime add table votes;
 alter publication supabase_realtime add table films;
+
+-- 迁移（2026-07-02 拖拽排序）：已有的库在 SQL Editor 里跑这一句即可
+-- alter table films add column if not exists sort_order int not null default 0;

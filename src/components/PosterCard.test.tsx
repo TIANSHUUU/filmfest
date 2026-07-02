@@ -32,30 +32,18 @@ describe('PosterCard', () => {
     expect(onVote).toHaveBeenCalledWith('f1');
   });
 
-  it('always shows the 想看理由 icon, even without a reason', () => {
-    render(<PosterCard film={base} tally={zero} {...common} />);
-    expect(screen.getByLabelText('想看理由')).toBeInTheDocument();
-  });
-
-  it('shows and toggles the 想看理由 popover when a reason exists', async () => {
+  it('shows the 想看理由 text inline on the card when present', () => {
     const film = { ...base, comment: '诺兰神作，必看' };
     render(<PosterCard film={film} tally={zero} {...common} />);
-
-    const btn = screen.getByLabelText('想看理由');
-    expect(screen.queryByText('诺兰神作，必看')).not.toBeInTheDocument();
-    await userEvent.click(btn);
-    expect(screen.getByText('诺兰神作，必看')).toBeInTheDocument();
-    await userEvent.click(btn);
-    expect(screen.queryByText('诺兰神作，必看')).not.toBeInTheDocument();
+    expect(screen.getByText(/诺兰神作，必看/)).toBeInTheDocument();
   });
 
-  it('edits an existing reason via the popover', async () => {
+  it('edits an existing reason by clicking the inline text', async () => {
     const onSetComment = vi.fn();
     const film = { ...base, comment: '想看' };
     render(<PosterCard film={film} tally={zero} {...common} onSetComment={onSetComment} />);
 
     await userEvent.click(screen.getByLabelText('想看理由'));
-    await userEvent.click(screen.getByText('编辑'));
     const ta = screen.getByPlaceholderText(/为什么想看/);
     await userEvent.clear(ta);
     await userEvent.type(ta, '冲影评去的');
@@ -63,15 +51,22 @@ describe('PosterCard', () => {
     expect(onSetComment).toHaveBeenCalledWith('f1', '冲影评去的');
   });
 
-  it('adds a reason when none exists', async () => {
+  it('adds a reason via the 写想看理由 entry when none exists', async () => {
     const onSetComment = vi.fn();
     render(<PosterCard film={base} tally={zero} {...common} onSetComment={onSetComment} />);
 
-    await userEvent.click(screen.getByLabelText('想看理由'));
+    expect(screen.queryByLabelText('想看理由')).not.toBeInTheDocument();
     await userEvent.click(screen.getByText(/写想看理由/));
     await userEvent.type(screen.getByPlaceholderText(/为什么想看/), '朋友推荐');
     await userEvent.click(screen.getByText('保存'));
     expect(onSetComment).toHaveBeenCalledWith('f1', '朋友推荐');
+  });
+
+  it('keeps the poster free of comment controls', () => {
+    const film = { ...base, comment: '想看' };
+    render(<PosterCard film={film} tally={zero} {...common} />);
+    const poster = screen.getByLabelText('打开 TMDB 页面');
+    expect(poster.querySelector('[aria-label="想看理由"]')).toBeNull();
   });
 
   it('opens the TMDB page in a new tab when the poster is clicked', async () => {
@@ -80,15 +75,6 @@ describe('PosterCard', () => {
     await userEvent.click(screen.getByLabelText('打开 TMDB 页面'));
     expect(open).toHaveBeenCalledWith(
       'https://www.themoviedb.org/movie/1?language=zh-CN', '_blank', 'noopener');
-    open.mockRestore();
-  });
-
-  it('does not navigate when clicking the 想看理由 button on the poster', async () => {
-    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
-    render(<PosterCard film={{ ...base, comment: '想看' }} tally={zero} {...common} />);
-    await userEvent.click(screen.getByLabelText('想看理由'));
-    expect(screen.getByText('想看')).toBeInTheDocument();
-    expect(open).not.toHaveBeenCalled();
     open.mockRestore();
   });
 

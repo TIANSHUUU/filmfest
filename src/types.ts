@@ -32,6 +32,7 @@ export interface Film {
   added_by: Identity;
   status: 'watchlist' | 'watched';
   created_at: string;
+  sort_order?: number | null;
 }
 
 export interface Vote {

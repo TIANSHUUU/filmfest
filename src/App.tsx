@@ -76,6 +76,15 @@ function Main({ identity }: { identity: Identity }) {
     await films.refresh();
   };
 
+  const onReorder = async (orderedIds: string[]) => {
+    try {
+      await films.setOrder(orderedIds);
+    } catch {
+      window.alert('排序没能保存：数据库还缺 sort_order 字段，请先在 Supabase 后台运行迁移 SQL（见 supabase/schema.sql 末尾注释）');
+      await films.refresh();
+    }
+  };
+
   const tabStyle = (active: boolean): React.CSSProperties => ({
     fontSize: 22, fontWeight: 700, padding: 0, background: 'transparent', border: 'none',
     color: active ? '#fff' : '#7a6748', borderBottom: active ? '2px solid var(--gold)' : '2px solid transparent',
@@ -105,7 +114,8 @@ function Main({ identity }: { identity: Identity }) {
       <PosterWall films={shownFilms} categories={shownCats} votes={votes.votes}
         onVote={onVote} onToggleWatched={onToggleWatched} onDelete={onDelete}
         onRenameCategory={onRenameCategory} identity={identity}
-        onSetReview={onSetReview} onSetComment={onSetComment} onSetCategory={onSetCategory} />
+        onSetReview={onSetReview} onSetComment={onSetComment} onSetCategory={onSetCategory}
+        onReorder={onReorder} />
 
       <VotingWidget films={watchlist} votes={votes.votes} onVote={onVote} />
 
