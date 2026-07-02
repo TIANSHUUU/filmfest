@@ -130,7 +130,7 @@ function Main({ identity }: { identity: Identity }) {
       {showCats && (
         <CategoryModal categories={cats.categories}
           onAdd={(name) => cats.add(name, identity)}
-          onRename={cats.rename} onDelete={cats.remove}
+          onRename={cats.rename} onDelete={cats.remove} onReorder={cats.reorder}
           onClose={() => setShowCats(false)} />
       )}
     </div>

@@ -16,5 +16,13 @@ export function useCategories() {
     },
     rename: async (id: string, name: string) => { await db.renameCategory(id, name); await refresh(); },
     remove: async (id: string) => { await db.deleteCategory(id); await refresh(); },
+    // 先本地重排（拖完不回跳），再写库
+    reorder: async (ids: string[]) => {
+      const pos = new Map(ids.map((id, i) => [id, i + 1]));
+      setCategories((prev) => [...prev].sort(
+        (a, b) => (pos.get(a.id) ?? 0) - (pos.get(b.id) ?? 0)));
+      await db.setCategoryOrder(ids);
+      await refresh();
+    },
   };
 }

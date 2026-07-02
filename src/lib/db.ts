@@ -22,6 +22,13 @@ export async function deleteCategory(id: string) {
   const { error } = await supabase.from('categories').delete().eq('id', id);
   if (error) throw error;
 }
+export async function setCategoryOrder(ids: string[]) {
+  for (const [i, id] of ids.entries()) {
+    const { error } = await supabase.from('categories')
+      .update({ sort_order: i + 1 }).eq('id', id);
+    if (error) throw error;
+  }
+}
 
 // ---- films ----
 export async function listFilms(): Promise<Film[]> {

@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const fromMock = vi.fn();
 vi.mock('./supabase', () => ({ supabase: { from: (...a: any[]) => fromMock(...a) } }));
 
-import { addFilm, toggleVote, setReview, setComment, setFilmCategory, setFilmOrder } from './db';
+import { addFilm, toggleVote, setReview, setComment, setFilmCategory, setFilmOrder,
+  setCategoryOrder } from './db';
 
 beforeEach(() => fromMock.mockReset());
 
@@ -105,6 +106,26 @@ describe('setFilmOrder', () => {
       { patch: { sort_order: 1 }, id: 'f2' },
       { patch: { sort_order: 2 }, id: 'f1' },
       { patch: { sort_order: 3 }, id: 'f3' },
+    ]);
+  });
+});
+
+describe('setCategoryOrder', () => {
+  it('writes 1-based sort_order for each category id in sequence', async () => {
+    const calls: Array<{ patch: any; id: string }> = [];
+    const update = vi.fn((patch: any) => ({
+      eq: vi.fn((_col: string, id: string) => {
+        calls.push({ patch, id });
+        return Promise.resolve({ error: null });
+      }),
+    }));
+    fromMock.mockReturnValue({ update });
+
+    await setCategoryOrder(['c2', 'c1']);
+    expect(fromMock).toHaveBeenCalledWith('categories');
+    expect(calls).toEqual([
+      { patch: { sort_order: 1 }, id: 'c2' },
+      { patch: { sort_order: 2 }, id: 'c1' },
     ]);
   });
 });
