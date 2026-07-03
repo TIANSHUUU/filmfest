@@ -5,20 +5,21 @@ import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sort
 import type { Film, Category, Vote, Identity } from '../types';
 import { PosterCard } from './PosterCard';
 import { tallyForFilm } from '../lib/votes';
-import { nextOrder } from '../lib/films';
+import { nextOrder, categoryIdsOf } from '../lib/films';
 
 export function PosterWall({ films, categories, votes, onVote, onToggleWatched, onDelete,
-  onRenameCategory, identity, onSetReview, onSetComment, onSetCategory, onReorder }:
+  onRenameCategory, identity, onSetReview, onSetComment, onSetCategories, onReorder }:
   { films: Film[]; categories: Category[]; votes: Vote[]; onVote: (id: string) => void;
     onToggleWatched: (id: string) => void; onDelete: (id: string) => void;
     onRenameCategory: (id: string) => void; identity: Identity;
     onSetReview: (id: string, author: Identity, text: string | null) => void;
     onSetComment: (id: string, text: string | null) => void;
-    onSetCategory: (id: string, categoryId: string | null) => void;
+    onSetCategories: (id: string, categoryIds: string[]) => void;
     onReorder: (orderedIds: string[]) => void }) {
   const sections = [
-    ...categories.map((c) => ({ id: c.id as string | null, name: c.name, items: films.filter((f) => f.category_id === c.id) })),
-    { id: null, name: '未分类', items: films.filter((f) => !f.category_id || !categories.some((c) => c.id === f.category_id)) },
+    ...categories.map((c) => ({ id: c.id as string | null, name: c.name,
+      items: films.filter((f) => categoryIdsOf(f).includes(c.id)) })),
+    { id: null, name: '未分类', items: films.filter((f) => categoryIdsOf(f).length === 0) },
   ].filter((s) => s.items.length > 0);
 
   // 桌面按住拖 8px 才算拖拽（不影响点击跳 TMDB）；手机长按 250ms 才拖（不影响滚动）
@@ -56,7 +57,7 @@ export function PosterWall({ films, categories, votes, onVote, onToggleWatched, 
                     <PosterCard film={f} tally={tallyForFilm(votes, f.id)} onVote={onVote}
                       categories={categories} onToggleWatched={onToggleWatched} onDelete={onDelete}
                       identity={identity} onSetReview={onSetReview} onSetComment={onSetComment}
-                      onSetCategory={onSetCategory} />
+                      onSetCategories={onSetCategories} />
                   </SortableFilm>
                 ))}
               </div>

@@ -17,6 +17,7 @@ create table films (
   review_pig text,
   review_baby text,
   category_id uuid references categories(id) on delete set null,
+  category_ids uuid[] not null default '{}',
   added_by text not null check (added_by in ('pig','baby')),
   status text not null default 'watchlist' check (status in ('watchlist','watched')),
   sort_order int not null default 0,
@@ -49,3 +50,8 @@ alter publication supabase_realtime add table films;
 
 -- 迁移（2026-07-03 片长）：
 -- alter table films add column if not exists runtime int;
+
+-- 迁移（2026-07-03 多分类）：加数组列，并把已有单分类迁进去
+-- alter table films add column if not exists category_ids uuid[] not null default '{}';
+-- update films set category_ids = array[category_id]
+--   where category_id is not null and (category_ids is null or category_ids = '{}');

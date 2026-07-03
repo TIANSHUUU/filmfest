@@ -29,6 +29,7 @@ export interface Film {
   review_pig: string | null;
   review_baby: string | null;
   category_id: string | null;
+  category_ids?: string[] | null;
   added_by: Identity;
   status: 'watchlist' | 'watched';
   created_at: string;

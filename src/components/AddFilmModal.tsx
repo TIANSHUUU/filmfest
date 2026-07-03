@@ -5,22 +5,25 @@ import { searchMovies, fetchRuntime, type TmdbMovie } from '../lib/tmdb';
 interface AddInput {
   title: string; year: number | null; poster_url: string | null;
   tmdb_id: number | null; overview: string | null; comment: string | null;
-  runtime: number | null; category_id: string | null; added_by: Identity;
+  runtime: number | null; category_ids: string[]; added_by: Identity;
 }
 
 export function AddFilmModal({ categories, identity, onAdd, onClose, isDuplicate }: {
   categories: Category[]; identity: Identity;
   onAdd: (input: AddInput) => Promise<void>; onClose: () => void;
-  isDuplicate?: (tmdbId: number | null, categoryId: string | null) => boolean;
+  isDuplicate?: (tmdbId: number | null) => boolean;
 }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<TmdbMovie[]>([]);
   const [picked, setPicked] = useState<TmdbMovie | null>(null);
-  const [categoryId, setCategoryId] = useState<string>(categories[0]?.id ?? '');
+  const [selectedCats, setSelectedCats] = useState<string[]>([]);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [dupMsg, setDupMsg] = useState('');
   const submittingRef = useRef(false);
+
+  const toggleCat = (id: string) => setSelectedCats((prev) =>
+    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
 
   const doSearch = async () => {
     setLoading(true);
@@ -29,9 +32,8 @@ export function AddFilmModal({ categories, identity, onAdd, onClose, isDuplicate
 
   const submit = async () => {
     if (!picked || submittingRef.current) return;
-    const targetCategory = categoryId || null;
-    if (isDuplicate?.(picked.tmdbId, targetCategory)) {
-      setDupMsg('这部已经在该片单里啦～');
+    if (isDuplicate?.(picked.tmdbId)) {
+      setDupMsg('这部已经在片库里啦，去卡片上 ✏️ 加片单即可～');
       return;
     }
     submittingRef.current = true;
@@ -40,7 +42,7 @@ export function AddFilmModal({ categories, identity, onAdd, onClose, isDuplicate
       title: picked.title, year: picked.year, poster_url: picked.posterUrl,
       tmdb_id: picked.tmdbId, overview: picked.overview,
       comment: comment.trim() || null, runtime,
-      category_id: targetCategory, added_by: identity,
+      category_ids: selectedCats, added_by: identity,
     });
     onClose();
   };
@@ -67,13 +69,24 @@ export function AddFilmModal({ categories, identity, onAdd, onClose, isDuplicate
       </div>
       {picked && (
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <span>归入</span>
-            <select value={categoryId}
-              onChange={(e) => { setCategoryId(e.target.value); setDupMsg(''); }} style={inputStyle}>
-              <option value="">未分类</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+          <div>
+            <div style={{ marginBottom: 6, color: '#c9b58a', fontSize: 13 }}>归入片单（可多选，不选则未分类）</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {categories.map((c) => {
+                const on = selectedCats.includes(c.id);
+                return (
+                  <label key={c.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '5px 10px', borderRadius: 16, cursor: 'pointer', fontSize: 13,
+                    border: `1px solid ${on ? 'var(--gold)' : 'rgba(233,196,106,.3)'}`,
+                    background: on ? 'rgba(233,196,106,.18)' : 'transparent',
+                    color: on ? 'var(--gold)' : 'var(--ink)' }}>
+                    <input type="checkbox" checked={on} onChange={() => toggleCat(c.id)}
+                      style={{ accentColor: '#e9c46a' }} />
+                    {c.name}
+                  </label>
+                );
+              })}
+            </div>
           </div>
           <textarea placeholder="💬 推荐理由 / 为什么想看（可选）"
             value={comment} onChange={(e) => setComment(e.target.value)}

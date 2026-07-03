@@ -2,15 +2,15 @@ import { useState } from 'react';
 import type { Film, Category, Identity } from '../types';
 import { IDENTITY_BADGE, IDENTITY_LABEL } from '../types';
 import type { Tally } from '../lib/votes';
-import { formatRuntime } from '../lib/films';
+import { formatRuntime, categoryIdsOf } from '../lib/films';
 
 export function PosterCard({ film, tally, categories, onVote, onToggleWatched, onDelete,
-  identity, onSetReview, onSetComment, onSetCategory }:
+  identity, onSetReview, onSetComment, onSetCategories }:
   { film: Film; tally: Tally; categories: Category[]; onVote: (id: string) => void;
     onToggleWatched: (id: string) => void; onDelete: (id: string) => void;
     identity: Identity; onSetReview: (id: string, author: Identity, text: string | null) => void;
     onSetComment: (id: string, text: string | null) => void;
-    onSetCategory: (id: string, categoryId: string | null) => void }) {
+    onSetCategories: (id: string, categoryIds: string[]) => void }) {
   const ownerClass = film.added_by === 'pig' ? 'badge-you' : 'badge-ta';
   const [editComment, setEditComment] = useState(false);
   const [commentDraft, setCommentDraft] = useState(film.comment ?? '');
@@ -112,16 +112,24 @@ export function PosterCard({ film, tally, categories, onVote, onToggleWatched, o
             borderColor: 'rgba(255,138,138,.4)' }}>🗑</button>
       </div>
       {editCategory && (
-        <select aria-label="选择片单" value={film.category_id ?? ''}
-          onChange={(e) => { onSetCategory(film.id, e.target.value || null); setEditCategory(false); }}
-          style={{ width: '100%', marginTop: 6, padding: '5px 6px', borderRadius: 8,
-            fontSize: 12, fontFamily: 'inherit', background: '#2a0a12',
-            color: 'var(--ink)', border: '1px solid var(--gold)' }}>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-          <option value="">未分类</option>
-        </select>
+        <div aria-label="选择片单" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+          {categories.map((c) => {
+            const ids = categoryIdsOf(film);
+            const on = ids.includes(c.id);
+            return (
+              <label key={c.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4,
+                padding: '3px 8px', borderRadius: 14, cursor: 'pointer', fontSize: 12,
+                border: `1px solid ${on ? 'var(--gold)' : 'rgba(233,196,106,.3)'}`,
+                background: on ? 'rgba(233,196,106,.18)' : 'transparent',
+                color: on ? 'var(--gold)' : 'var(--ink)' }}>
+                <input type="checkbox" checked={on} style={{ accentColor: '#e9c46a' }}
+                  onChange={() => onSetCategories(film.id,
+                    on ? ids.filter((x) => x !== c.id) : [...ids, c.id])} />
+                {c.name}
+              </label>
+            );
+          })}
+        </div>
       )}
       {watched && (
         <ReviewSection film={film} identity={identity} onSetReview={onSetReview} />

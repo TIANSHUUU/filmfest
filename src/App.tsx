@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Identity } from './types';
 import { fetchRuntime } from './lib/tmdb';
+import { categoryIdsOf } from './lib/films';
 import { useIdentity } from './hooks/useIdentity';
 import { useCategories } from './hooks/useCategories';
 import { useFilms } from './hooks/useFilms';
@@ -47,13 +48,11 @@ function Main({ identity }: { identity: Identity }) {
   const watchlist = films.films.filter((f) => f.status === 'watchlist');
   const watched = films.films.filter((f) => f.status === 'watched');
   const shown = view === 'watchlist' ? watchlist : watched;
-  const isUncategorized = (f: typeof shown[number]) =>
-    !f.category_id || !cats.categories.some((c) => c.id === f.category_id);
   const shownCats = catFilter === '' ? cats.categories
     : cats.categories.filter((c) => c.id === catFilter);
   const shownFilms = catFilter === '' ? shown
-    : catFilter === '__none' ? shown.filter(isUncategorized)
-    : shown.filter((f) => f.category_id === catFilter);
+    : catFilter === '__none' ? shown.filter((f) => categoryIdsOf(f).length === 0)
+    : shown.filter((f) => categoryIdsOf(f).includes(catFilter));
   const onVote = (filmId: string) => votes.toggle(filmId, identity);
 
   const onToggleWatched = async (id: string) => {
@@ -88,8 +87,8 @@ function Main({ identity }: { identity: Identity }) {
     await films.refresh();
   };
 
-  const onSetCategory = async (id: string, categoryId: string | null) => {
-    await films.setCategory(id, categoryId);
+  const onSetCategories = async (id: string, categoryIds: string[]) => {
+    await films.setCategories(id, categoryIds);
     await films.refresh();
   };
 
@@ -131,7 +130,7 @@ function Main({ identity }: { identity: Identity }) {
       <PosterWall films={shownFilms} categories={shownCats} votes={votes.votes}
         onVote={onVote} onToggleWatched={onToggleWatched} onDelete={onDelete}
         onRenameCategory={onRenameCategory} identity={identity}
-        onSetReview={onSetReview} onSetComment={onSetComment} onSetCategory={onSetCategory}
+        onSetReview={onSetReview} onSetComment={onSetComment} onSetCategories={onSetCategories}
         onReorder={onReorder} />
 
       <VotingWidget films={watchlist} votes={votes.votes} onVote={onVote} />
@@ -139,9 +138,8 @@ function Main({ identity }: { identity: Identity }) {
       {showAdd && (
         <AddFilmModal categories={cats.categories} identity={identity}
           onAdd={async (input) => { await films.add(input); await films.refresh(); }}
-          isDuplicate={(tmdbId, categoryId) =>
-            tmdbId != null && films.films.some(
-              (f) => f.tmdb_id === tmdbId && f.category_id === categoryId)}
+          isDuplicate={(tmdbId) =>
+            tmdbId != null && films.films.some((f) => f.tmdb_id === tmdbId)}
           onClose={() => setShowAdd(false)} />
       )}
       {showCats && (

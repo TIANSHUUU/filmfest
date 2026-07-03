@@ -16,7 +16,7 @@ const cats: Category[] = [
 const zero = { pig: false, baby: false, count: 0 };
 const common = {
   onVote: vi.fn(), onToggleWatched: vi.fn(), onDelete: vi.fn(),
-  onSetReview: vi.fn(), onSetComment: vi.fn(), onSetCategory: vi.fn(),
+  onSetReview: vi.fn(), onSetComment: vi.fn(), onSetCategories: vi.fn(),
   categories: cats, identity: 'pig' as const,
 };
 
@@ -115,20 +115,20 @@ describe('PosterCard', () => {
     expect(screen.queryByRole('button', { name: /投/ })).not.toBeInTheDocument();
   });
 
-  it('moves the film to another category via the edit button', async () => {
-    const onSetCategory = vi.fn();
-    render(<PosterCard film={base} tally={zero} {...common} onSetCategory={onSetCategory} />);
+  it('adds the film to another category via the edit button', async () => {
+    const onSetCategories = vi.fn();
+    render(<PosterCard film={base} tally={zero} {...common} onSetCategories={onSetCategories} />);
     await userEvent.click(screen.getByLabelText('编辑分类'));
-    await userEvent.selectOptions(screen.getByLabelText('选择片单'), 'c2');
-    expect(onSetCategory).toHaveBeenCalledWith('f1', 'c2');
+    await userEvent.click(screen.getByRole('checkbox', { name: '刘别谦' }));
+    expect(onSetCategories).toHaveBeenCalledWith('f1', ['c1', 'c2']);
   });
 
-  it('can clear the category back to 未分类', async () => {
-    const onSetCategory = vi.fn();
-    render(<PosterCard film={base} tally={zero} {...common} onSetCategory={onSetCategory} />);
+  it('can remove the film from a category (down to 未分类)', async () => {
+    const onSetCategories = vi.fn();
+    render(<PosterCard film={base} tally={zero} {...common} onSetCategories={onSetCategories} />);
     await userEvent.click(screen.getByLabelText('编辑分类'));
-    await userEvent.selectOptions(screen.getByLabelText('选择片单'), '');
-    expect(onSetCategory).toHaveBeenCalledWith('f1', null);
+    await userEvent.click(screen.getByRole('checkbox', { name: '比利怀尔德' }));
+    expect(onSetCategories).toHaveBeenCalledWith('f1', []);
   });
 
   it('shows a 退回待看 action for watched films', () => {

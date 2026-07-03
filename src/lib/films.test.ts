@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sortFilms, nextOrder, formatRuntime } from './films';
+import { sortFilms, nextOrder, formatRuntime, categoryIdsOf } from './films';
 import type { Film } from '../types';
 
 const mk = (id: string, created_at: string, sort_order?: number | null): Film => ({
@@ -52,5 +52,21 @@ describe('formatRuntime', () => {
     expect(formatRuntime(null)).toBe('');
     expect(formatRuntime(0)).toBe('');
     expect(formatRuntime(undefined)).toBe('');
+  });
+});
+
+describe('categoryIdsOf', () => {
+  const film = (over: Partial<Film>): Film => ({ ...mk('a', '2026-01-01'), ...over });
+
+  it('returns category_ids when the film has them', () => {
+    expect(categoryIdsOf(film({ category_ids: ['c1', 'c2'] }))).toEqual(['c1', 'c2']);
+  });
+
+  it('falls back to [category_id] for legacy single-category rows', () => {
+    expect(categoryIdsOf(film({ category_id: 'c9', category_ids: undefined }))).toEqual(['c9']);
+  });
+
+  it('returns [] when the film is uncategorized', () => {
+    expect(categoryIdsOf(film({ category_id: null, category_ids: [] }))).toEqual([]);
   });
 });

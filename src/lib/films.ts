@@ -14,6 +14,12 @@ export function formatRuntime(minutes: number | null | undefined): string {
   return minutes ? `${minutes}分钟` : '';
 }
 
+// 一部影片可属多个片单。新数据用 category_ids；老数据只有单个 category_id，回落成单元素数组。
+export function categoryIdsOf(film: Film): string[] {
+  if (film.category_ids && film.category_ids.length > 0) return film.category_ids;
+  return film.category_id ? [film.category_id] : [];
+}
+
 export function sortFilms(films: Film[]): Film[] {
   return [...films].sort((a, b) => {
     const ao = a.sort_order ?? 0;

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const fromMock = vi.fn();
 vi.mock('./supabase', () => ({ supabase: { from: (...a: any[]) => fromMock(...a) } }));
 
-import { addFilm, toggleVote, setReview, setComment, setFilmCategory, setFilmOrder,
+import { addFilm, toggleVote, setReview, setComment, setFilmCategories, setFilmOrder,
   setCategoryOrder } from './db';
 
 beforeEach(() => fromMock.mockReset());
@@ -17,10 +17,11 @@ describe('addFilm', () => {
 
     const res = await addFilm({
       title: 'Whiplash', year: 2014, poster_url: 'p', tmdb_id: 1,
-      overview: 'o', comment: '年度最佳', runtime: 106, category_id: 'c1', added_by: 'pig',
+      overview: 'o', comment: '年度最佳', runtime: 106, category_ids: ['c1'], added_by: 'pig',
     });
     expect(fromMock).toHaveBeenCalledWith('films');
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ title: 'Whiplash', added_by: 'pig', comment: '年度最佳' }));
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Whiplash', added_by: 'pig', comment: '年度最佳', category_ids: ['c1'] }));
     expect(res).toEqual({ id: 'f1' });
   });
 });
@@ -67,25 +68,25 @@ describe('setReview', () => {
   });
 });
 
-describe('setFilmCategory', () => {
-  it('updates the category_id column', async () => {
+describe('setFilmCategories', () => {
+  it('writes the category_ids array (and keeps category_id as the first, for legacy)', async () => {
     const eq = vi.fn().mockResolvedValue({ error: null });
     const update = vi.fn(() => ({ eq }));
     fromMock.mockReturnValue({ update });
 
-    await setFilmCategory('f1', 'c2');
+    await setFilmCategories('f1', ['c2', 'c3']);
     expect(fromMock).toHaveBeenCalledWith('films');
-    expect(update).toHaveBeenCalledWith({ category_id: 'c2' });
+    expect(update).toHaveBeenCalledWith({ category_ids: ['c2', 'c3'], category_id: 'c2' });
     expect(eq).toHaveBeenCalledWith('id', 'f1');
   });
 
-  it('clears the category with null', async () => {
+  it('clears to 未分类 with an empty array', async () => {
     const eq = vi.fn().mockResolvedValue({ error: null });
     const update = vi.fn(() => ({ eq }));
     fromMock.mockReturnValue({ update });
 
-    await setFilmCategory('f1', null);
-    expect(update).toHaveBeenCalledWith({ category_id: null });
+    await setFilmCategories('f1', []);
+    expect(update).toHaveBeenCalledWith({ category_ids: [], category_id: null });
   });
 });
 
