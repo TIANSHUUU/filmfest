@@ -1,13 +1,39 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { Film, Vote } from '../types';
-import { filmsInBallot, tallyForFilm } from '../lib/votes';
+import { filmsInBallot, tallyForFilm, topBallotFilms, pickRandom } from '../lib/votes';
 
 export function VotingWidget({ films, votes, onVote }:
   { films: Film[]; votes: Vote[]; onVote: (id: string) => void }) {
   const [open, setOpen] = useState(() =>
     typeof window.matchMedia !== 'function' || !window.matchMedia('(max-width: 640px)').matches);
+  const [spinning, setSpinning] = useState(false);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [winnerId, setWinnerId] = useState<string | null>(null);
+  const timer = useRef<number | null>(null);
+  useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
+
   const ballotIds = new Set(filmsInBallot(votes));
   const items = films.filter((f) => ballotIds.has(f.id));
+  const candidates = topBallotFilms(films, votes);
+  const winner = items.find((f) => f.id === winnerId) ?? null;
+
+  const spin = () => {
+    if (spinning || candidates.length === 0) return;
+    setWinnerId(null);
+    setSpinning(true);
+    const start = Date.now();
+    timer.current = window.setInterval(() => {
+      setHighlightId(pickRandom(candidates)!.id);
+      if (Date.now() - start > 1500) {
+        if (timer.current) clearInterval(timer.current);
+        timer.current = null;
+        const w = pickRandom(candidates)!;
+        setHighlightId(w.id);
+        setWinnerId(w.id);
+        setSpinning(false);
+      }
+    }, 90);
+  };
 
   return (
     <div style={{ position: 'fixed', right: 24, bottom: 24, width: 300, zIndex: 20,
@@ -26,9 +52,13 @@ export function VotingWidget({ films, votes, onVote }:
             还没有投票。去海报上点 ♥ 发起吧。</p>}
           {items.map((f) => {
             const t = tallyForFilm(votes, f.id);
+            const lit = f.id === highlightId;
             return (
-              <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0',
-                borderBottom: '1px solid rgba(233,196,106,.12)' }}>
+              <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px',
+                margin: '0 -8px', borderRadius: 8,
+                borderBottom: '1px solid rgba(233,196,106,.12)',
+                background: lit ? 'rgba(233,196,106,.22)' : undefined,
+                transition: 'background .08s' }}>
                 <span style={{ flex: 1, color: '#fff', fontSize: 13 }}>{f.title}</span>
                 <span style={{ display: 'flex', gap: 3 }}>
                   {t.pig && <Dot cls="badge-you" label="🐷" />}
@@ -40,6 +70,24 @@ export function VotingWidget({ films, votes, onVote }:
               </div>
             );
           })}
+          {candidates.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              {winner && !spinning && (
+                <div className="serif" style={{ textAlign: 'center', color: 'var(--gold-bright)',
+                  fontSize: 15, marginBottom: 8 }}>🎉 今晚看《{winner.title}》</div>
+              )}
+              <button onClick={spin} disabled={spinning} style={{ width: '100%',
+                background: spinning ? 'rgba(233,196,106,.3)' : 'linear-gradient(135deg,var(--gold-bright),#d4a843)',
+                color: '#2a0a12', fontWeight: 800, fontSize: 13, padding: '9px', borderRadius: 12,
+                border: 'none', cursor: spinning ? 'default' : 'pointer' }}>
+                {spinning ? '🎬 抽选中…' : winner ? '🎬 再抽一次' : '🎬 帮我们选一部'}
+              </button>
+              {candidates.length > 1 && !spinning && !winner && (
+                <p style={{ color: '#9a7d52', fontSize: 11, textAlign: 'center', marginTop: 6 }}>
+                  {candidates.length} 部平票，交给命运 🎲</p>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

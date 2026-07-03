@@ -46,4 +46,15 @@ describe('VotingWidget', () => {
     await userEvent.click(screen.getByText(/投票中/));
     expect(screen.getByText('迷雾长夜')).toBeInTheDocument();
   });
+
+  it('offers a random picker once at least one film has votes', () => {
+    const votes: Vote[] = [{ id: '1', film_id: 'a', voter: 'pig', created_at: '' }];
+    render(<VotingWidget films={[mk('a', '迷雾长夜')]} votes={votes} onVote={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /帮我们选/ })).toBeInTheDocument();
+  });
+
+  it('shows no random picker when nobody has voted', () => {
+    render(<VotingWidget films={[mk('a', '迷雾长夜')]} votes={[]} onVote={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: /帮我们选/ })).not.toBeInTheDocument();
+  });
 });
