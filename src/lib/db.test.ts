@@ -17,7 +17,7 @@ describe('addFilm', () => {
 
     const res = await addFilm({
       title: 'Whiplash', year: 2014, poster_url: 'p', tmdb_id: 1,
-      overview: 'o', comment: '年度最佳', category_id: 'c1', added_by: 'pig',
+      overview: 'o', comment: '年度最佳', runtime: 106, category_id: 'c1', added_by: 'pig',
     });
     expect(fromMock).toHaveBeenCalledWith('films');
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({ title: 'Whiplash', added_by: 'pig', comment: '年度最佳' }));

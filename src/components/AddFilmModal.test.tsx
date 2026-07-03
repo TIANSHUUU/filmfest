@@ -3,7 +3,11 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const searchMovies = vi.fn();
-vi.mock('../lib/tmdb', () => ({ searchMovies: (...a: any[]) => searchMovies(...a) }));
+const fetchRuntime = vi.fn().mockResolvedValue(106);
+vi.mock('../lib/tmdb', () => ({
+  searchMovies: (...a: any[]) => searchMovies(...a),
+  fetchRuntime: (...a: any[]) => fetchRuntime(...a),
+}));
 
 import { AddFilmModal } from './AddFilmModal';
 import type { Category } from '../types';

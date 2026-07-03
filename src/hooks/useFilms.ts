@@ -33,6 +33,7 @@ export function useFilms() {
     setReview: db.setReview,
     setComment: db.setComment,
     setCategory: db.setFilmCategory,
+    setRuntime: db.setRuntime,
     setOrder,
   };
 }

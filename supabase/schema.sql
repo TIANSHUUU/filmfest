@@ -20,6 +20,7 @@ create table films (
   added_by text not null check (added_by in ('pig','baby')),
   status text not null default 'watchlist' check (status in ('watchlist','watched')),
   sort_order int not null default 0,
+  runtime int,
   created_at timestamptz not null default now()
 );
 
@@ -45,3 +46,6 @@ alter publication supabase_realtime add table films;
 
 -- 迁移（2026-07-02 拖拽排序）：已有的库在 SQL Editor 里跑这一句即可
 -- alter table films add column if not exists sort_order int not null default 0;
+
+-- 迁移（2026-07-03 片长）：
+-- alter table films add column if not exists runtime int;

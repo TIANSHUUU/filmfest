@@ -40,7 +40,7 @@ export async function listFilms(): Promise<Film[]> {
 export async function addFilm(input: {
   title: string; year: number | null; poster_url: string | null;
   tmdb_id: number | null; overview: string | null; comment: string | null;
-  category_id: string | null; added_by: Identity;
+  runtime: number | null; category_id: string | null; added_by: Identity;
 }): Promise<Film> {
   const { data, error } = await supabase.from('films')
     .insert({ ...input, status: 'watchlist' }).select().single();
@@ -73,6 +73,10 @@ export async function setFilmOrder(ids: string[]) {
 }
 export async function setComment(id: string, text: string | null) {
   const { error } = await supabase.from('films').update({ comment: text }).eq('id', id);
+  if (error) throw error;
+}
+export async function setRuntime(id: string, runtime: number | null) {
+  const { error } = await supabase.from('films').update({ runtime }).eq('id', id);
   if (error) throw error;
 }
 

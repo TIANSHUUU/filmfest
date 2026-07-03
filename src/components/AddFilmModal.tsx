@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react';
 import type { Category, Identity } from '../types';
-import { searchMovies, type TmdbMovie } from '../lib/tmdb';
+import { searchMovies, fetchRuntime, type TmdbMovie } from '../lib/tmdb';
 
 interface AddInput {
   title: string; year: number | null; poster_url: string | null;
   tmdb_id: number | null; overview: string | null; comment: string | null;
-  category_id: string | null; added_by: Identity;
+  runtime: number | null; category_id: string | null; added_by: Identity;
 }
 
 export function AddFilmModal({ categories, identity, onAdd, onClose, isDuplicate }: {
@@ -35,10 +35,11 @@ export function AddFilmModal({ categories, identity, onAdd, onClose, isDuplicate
       return;
     }
     submittingRef.current = true;
+    const runtime = await fetchRuntime(picked.tmdbId);
     await onAdd({
       title: picked.title, year: picked.year, poster_url: picked.posterUrl,
       tmdb_id: picked.tmdbId, overview: picked.overview,
-      comment: comment.trim() || null,
+      comment: comment.trim() || null, runtime,
       category_id: targetCategory, added_by: identity,
     });
     onClose();

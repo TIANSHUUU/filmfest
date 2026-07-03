@@ -10,6 +10,10 @@ export function nextOrder(ids: string[], activeId: string, overId: string): stri
   return next;
 }
 
+export function formatRuntime(minutes: number | null | undefined): string {
+  return minutes ? `${minutes}分钟` : '';
+}
+
 export function sortFilms(films: Film[]): Film[] {
   return [...films].sort((a, b) => {
     const ao = a.sort_order ?? 0;

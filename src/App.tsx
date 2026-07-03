@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Identity } from './types';
+import { fetchRuntime } from './lib/tmdb';
 import { useIdentity } from './hooks/useIdentity';
 import { useCategories } from './hooks/useCategories';
 import { useFilms } from './hooks/useFilms';
@@ -26,6 +27,22 @@ function Main({ identity }: { identity: Identity }) {
   const [showCats, setShowCats] = useState(false);
   const [view, setView] = useState<'watchlist' | 'watched'>('watchlist');
   const [catFilter, setCatFilter] = useState('');
+  const backfilledRuntime = useRef(false);
+
+  // 为已入库、但还没有片长的影片一次性补取 TMDB 片长
+  useEffect(() => {
+    if (backfilledRuntime.current) return;
+    const need = films.films.filter((f) => f.tmdb_id != null && f.runtime == null);
+    if (need.length === 0) return;
+    backfilledRuntime.current = true;
+    (async () => {
+      for (const f of need) {
+        const rt = await fetchRuntime(f.tmdb_id!);
+        if (rt != null) await films.setRuntime(f.id, rt);
+      }
+      await films.refresh();
+    })();
+  }, [films]);
 
   const watchlist = films.films.filter((f) => f.status === 'watchlist');
   const watched = films.films.filter((f) => f.status === 'watched');

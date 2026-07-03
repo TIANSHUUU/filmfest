@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Film, Category, Identity } from '../types';
 import { IDENTITY_BADGE, IDENTITY_LABEL } from '../types';
 import type { Tally } from '../lib/votes';
+import { formatRuntime } from '../lib/films';
 
 export function PosterCard({ film, tally, categories, onVote, onToggleWatched, onDelete,
   identity, onSetReview, onSetComment, onSetCategory }:
@@ -48,7 +49,8 @@ export function PosterCard({ film, tally, categories, onVote, onToggleWatched, o
         )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 7 }}>
-        <span style={{ color: '#9a7d52', fontSize: 12 }}>{film.year ?? ''}</span>
+        <span style={{ color: '#9a7d52', fontSize: 12 }}>
+          {[film.year ?? '', formatRuntime(film.runtime)].filter(Boolean).join(' · ')}</span>
         {!watched && (
           <button onClick={() => onVote(film.id)} style={{
             background: tally.count ? 'var(--gold)' : 'rgba(233,196,106,.14)',

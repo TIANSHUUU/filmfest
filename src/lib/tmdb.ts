@@ -25,3 +25,17 @@ export async function searchMovies(query: string): Promise<TmdbMovie[]> {
     overview: r.overview ?? '',
   }));
 }
+
+// 片长只在影片详情接口里有（搜索结果不含），单独取；失败/缺失返回 null，绝不阻塞添加。
+export async function fetchRuntime(tmdbId: number): Promise<number | null> {
+  const key = import.meta.env.VITE_TMDB_API_KEY as string;
+  const url = `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${key}&language=zh-CN`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.runtime ? Number(data.runtime) : null;
+  } catch {
+    return null;
+  }
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sortFilms, nextOrder } from './films';
+import { sortFilms, nextOrder, formatRuntime } from './films';
 import type { Film } from '../types';
 
 const mk = (id: string, created_at: string, sort_order?: number | null): Film => ({
@@ -40,5 +40,17 @@ describe('nextOrder', () => {
   it('returns null when dropped on itself or on an unknown id', () => {
     expect(nextOrder(['a', 'b'], 'a', 'a')).toBeNull();
     expect(nextOrder(['a', 'b'], 'a', 'x')).toBeNull();
+  });
+});
+
+describe('formatRuntime', () => {
+  it('formats minutes with a 分钟 suffix', () => {
+    expect(formatRuntime(106)).toBe('106分钟');
+  });
+
+  it('returns an empty string for null / 0 / undefined', () => {
+    expect(formatRuntime(null)).toBe('');
+    expect(formatRuntime(0)).toBe('');
+    expect(formatRuntime(undefined)).toBe('');
   });
 });
