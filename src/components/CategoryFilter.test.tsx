@@ -10,11 +10,11 @@ const cats: Category[] = [
 ];
 
 describe('CategoryFilter', () => {
-  it('lists 全部片单, every category and 未分类', () => {
+  it('lists 筛选片单 as the default option, every category and 未分类', () => {
     render(<CategoryFilter categories={cats} value="" onChange={vi.fn()} />);
     const sel = screen.getByLabelText('筛选片单');
     const labels = Array.from(sel.querySelectorAll('option')).map((o) => o.textContent);
-    expect(labels).toEqual(['全部片单', '比利怀尔德', '刘别谦', '未分类']);
+    expect(labels).toEqual(['筛选片单', '比利怀尔德', '刘别谦', '未分类']);
   });
 
   it('reports the selected category id', async () => {

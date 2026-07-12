@@ -28,16 +28,20 @@ button { cursor:pointer; font-family:inherit; }
   .action-row { gap:4px !important; }
   .action-row button { font-size:11px !important; padding:4px 5px !important; }
 
-  .nav-bar { padding:12px 14px !important; gap:8px !important; }
-  .nav-title { font-size:18px !important; }
-  .nav-btn { font-size:11px !important; padding:5px 9px !important; }
-  .nav-add-btn { font-size:11px !important; padding:7px 11px !important; }
-  .nav-avatar { width:26px !important; height:26px !important; font-size:11px !important; }
+  .nav-bar { padding:12px 14px !important; gap:8px !important; row-gap:10px !important;
+    flex-wrap:wrap !important; justify-content:space-between !important; }
+  .nav-title { font-size:18px !important; order:1; }
+  .nav-avatar { width:26px !important; height:26px !important; font-size:11px !important; order:2; }
+  .nav-break { flex-basis:100% !important; height:0 !important; order:3; }
+  .nav-spacer { display:none !important; }
+  .nav-btn { font-size:11px !important; padding:5px 9px !important; order:4; }
+  .cat-filter { max-width:104px !important; font-size:11.5px !important; padding:4px 6px !important; order:5; }
+  .nav-add-btn { font-size:11px !important; padding:7px 11px !important; order:6; }
 
   .tabs-row { gap:10px !important; }
   .tab-btn { font-size:17px !important; }
-  .cat-filter { max-width:104px !important; font-size:11.5px !important; padding:4px 6px !important; }
 }
 .nav-title, .nav-btn, .nav-add-btn, .tab-btn { white-space:nowrap; }
+.nav-break { flex-basis:0; width:0; height:0; overflow:hidden; }
 .badge-you { background:var(--you); color:#2a0a12; }
 .badge-ta  { background:var(--ta);  color:#06302b; }

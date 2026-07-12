@@ -12,7 +12,6 @@ import { PosterWall } from './components/PosterWall';
 import { VotingWidget } from './components/VotingWidget';
 import { AddFilmModal } from './components/AddFilmModal';
 import { CategoryModal } from './components/CategoryModal';
-import { CategoryFilter } from './components/CategoryFilter';
 
 export default function App() {
   const { identity, choose } = useIdentity();
@@ -111,7 +110,8 @@ function Main({ identity }: { identity: Identity }) {
     <div style={{ paddingBottom: 80 }}>
       <Nav identity={identity}
         onAddFilm={() => setShowAdd(true)}
-        onManageCategories={() => setShowCats(true)} />
+        onManageCategories={() => setShowCats(true)}
+        categories={cats.categories} catFilter={catFilter} onCatFilterChange={setCatFilter} />
 
       <div className="header-pad">
         <div className="tabs-row" style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
@@ -119,8 +119,6 @@ function Main({ identity }: { identity: Identity }) {
             onClick={() => setView('watchlist')}>待看片单</button>
           <button className="serif tab-btn" style={tabStyle(view === 'watched')}
             onClick={() => setView('watched')}>看过 ({watched.length})</button>
-          <CategoryFilter categories={cats.categories} value={catFilter}
-            onChange={setCatFilter} />
         </div>
         <p style={{ color: '#bfa884', marginTop: 6, fontSize: 13 }}>
           {view === 'watchlist'

@@ -1,8 +1,11 @@
-import type { Identity } from '../types';
+import type { Category, Identity } from '../types';
 import { IDENTITY_LABEL } from '../types';
+import { CategoryFilter } from './CategoryFilter';
 
-export function Nav({ identity, onAddFilm, onManageCategories }: {
+export function Nav({ identity, onAddFilm, onManageCategories, categories, catFilter,
+  onCatFilterChange }: {
   identity: Identity; onAddFilm: () => void; onManageCategories: () => void;
+  categories: Category[]; catFilter: string; onCatFilterChange: (value: string) => void;
 }) {
   return (
     <nav className="nav-bar" style={{ display: 'flex', alignItems: 'center', gap: 16,
@@ -13,7 +16,8 @@ export function Nav({ identity, onAddFilm, onManageCategories }: {
       <button className="nav-btn" onClick={onManageCategories} style={{ background: 'transparent',
         border: '1px solid rgba(233,196,106,.4)', color: '#c9b58a', borderRadius: 20,
         padding: '6px 12px', fontSize: 13 }}>管理片单</button>
-      <div style={{ flex: 1 }} />
+      <CategoryFilter categories={categories} value={catFilter} onChange={onCatFilterChange} />
+      <div className="nav-spacer" style={{ flex: 1 }} />
       <button className="nav-add-btn" onClick={onAddFilm} style={{
         background: 'linear-gradient(135deg,var(--gold-bright),#d4a843)',
         color: '#2a0a12', fontWeight: 800, fontSize: 13, padding: '9px 16px', borderRadius: 22,
@@ -22,6 +26,7 @@ export function Nav({ identity, onAddFilm, onManageCategories }: {
         style={{ width: 30, height: 30, borderRadius: '50%', display: 'flex',
           alignItems: 'center', justifyContent: 'center', fontWeight: 800,
           fontSize: identity === 'pig' ? 14 : 11, flexShrink: 0 }}>{IDENTITY_LABEL[identity]}</span>
+      <div className="nav-break" aria-hidden="true" />
     </nav>
   );
 }
