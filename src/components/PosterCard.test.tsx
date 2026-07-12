@@ -32,6 +32,11 @@ describe('PosterCard', () => {
     expect(onVote).toHaveBeenCalledWith('f1');
   });
 
+  it('shows the koala badge for films added by baby', () => {
+    render(<PosterCard film={{ ...base, added_by: 'baby' }} tally={zero} {...common} />);
+    expect(screen.getByLabelText('owner-baby')).toHaveTextContent('🐨');
+  });
+
   it('shows the 想看理由 text inline on the card when present', () => {
     const film = { ...base, comment: '诺兰神作，必看' };
     render(<PosterCard film={film} tally={zero} {...common} />);

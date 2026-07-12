@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { Film, Vote } from '../types';
+import { IDENTITY_BADGE } from '../types';
 import { filmsInBallot, tallyForFilm, topBallotFilms, pickRandom } from '../lib/votes';
 
 export function VotingWidget({ films, votes, onVote }:
@@ -61,8 +62,8 @@ export function VotingWidget({ films, votes, onVote }:
                 transition: 'background .08s' }}>
                 <span style={{ flex: 1, color: '#fff', fontSize: 13 }}>{f.title}</span>
                 <span style={{ display: 'flex', gap: 3 }}>
-                  {t.pig && <Dot cls="badge-you" label="🐷" />}
-                  {t.baby && <Dot cls="badge-ta" label="宝" />}
+                  {t.pig && <Dot cls="badge-you" label={IDENTITY_BADGE.pig} />}
+                  {t.baby && <Dot cls="badge-ta" label={IDENTITY_BADGE.baby} />}
                 </span>
                 <button onClick={() => onVote(f.id)} style={{ background: 'rgba(233,196,106,.14)',
                   border: '1px solid rgba(233,196,106,.45)', color: 'var(--gold)', fontSize: 11,

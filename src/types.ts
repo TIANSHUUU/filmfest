@@ -7,7 +7,7 @@ export const IDENTITY_LABEL: Record<Identity, string> = {
 
 export const IDENTITY_BADGE: Record<Identity, string> = {
   pig: '🐷',
-  baby: '宝',
+  baby: '🐨',
 };
 
 export interface Category {

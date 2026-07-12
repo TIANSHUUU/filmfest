@@ -57,4 +57,10 @@ describe('VotingWidget', () => {
     render(<VotingWidget films={[mk('a', '迷雾长夜')]} votes={[]} onVote={vi.fn()} />);
     expect(screen.queryByRole('button', { name: /帮我们选/ })).not.toBeInTheDocument();
   });
+
+  it('shows a koala dot for baby votes', () => {
+    const votes: Vote[] = [{ id: '1', film_id: 'a', voter: 'baby', created_at: '' }];
+    render(<VotingWidget films={[mk('a', '迷雾长夜')]} votes={votes} onVote={vi.fn()} />);
+    expect(screen.getByText('🐨')).toBeInTheDocument();
+  });
 });

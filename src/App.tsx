@@ -103,6 +103,7 @@ function Main({ identity }: { identity: Identity }) {
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     fontSize: 22, fontWeight: 700, padding: 0, background: 'transparent', border: 'none',
+    whiteSpace: 'nowrap', flexShrink: 0,
     color: active ? '#fff' : '#7a6748', borderBottom: active ? '2px solid var(--gold)' : '2px solid transparent',
   });
 
@@ -113,10 +114,10 @@ function Main({ identity }: { identity: Identity }) {
         onManageCategories={() => setShowCats(true)} />
 
       <div className="header-pad">
-        <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
-          <button className="serif" style={tabStyle(view === 'watchlist')}
+        <div className="tabs-row" style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
+          <button className="serif tab-btn" style={tabStyle(view === 'watchlist')}
             onClick={() => setView('watchlist')}>待看片单</button>
-          <button className="serif" style={tabStyle(view === 'watched')}
+          <button className="serif tab-btn" style={tabStyle(view === 'watched')}
             onClick={() => setView('watched')}>看过 ({watched.length})</button>
           <CategoryFilter categories={cats.categories} value={catFilter}
             onChange={setCatFilter} />
