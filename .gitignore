@@ -5,3 +5,4 @@ dist
 .superpowers/
 modifications.md
 screenshots/
+.DS_Store
